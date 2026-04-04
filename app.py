@@ -15,6 +15,7 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from supabase import create_client, Client
 
 st.set_page_config(
     page_title="Insurance Predict", 
@@ -211,6 +212,46 @@ def load_users():
 def save_users(users):
     with open(USER_DATA_FILE, "w") as f:
         json.dump(users, f, indent=2)
+
+# ==================== SUPABASE SETUP ====================
+SUPABASE_URL = "https://tgbxvosatuaknpwmyssg.supabase.co"
+SUPABASE_KEY = "sb_publishable_c8L6qcq-_0cG07JbvBzABg_vwhY_"
+
+@st.cache_resource
+def init_supabase():
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+supabase = init_supabase()
+
+def save_quote_to_supabase(email, user_data, premium, health_score):
+    """Save a quote to Supabase"""
+    try:
+        data = {
+            "user_email": email,
+            "age": user_data["age"],
+            "bmi": user_data["bmi"],
+            "children": user_data["children"],
+            "bloodpressure": user_data["bloodpressure"],
+            "gender": user_data["gender"],
+            "diabetic": user_data["diabetic"],
+            "smoker": user_data["smoker"],
+            "predicted_premium": premium,
+            "health_score": health_score
+        }
+        result = supabase.table("quotes").insert(data).execute()
+        return True
+    except Exception as e:
+        print(f"Supabase error: {e}")
+        return False
+
+def load_quotes_from_supabase(email):
+    """Load quotes for a specific user from Supabase"""
+    try:
+        result = supabase.table("quotes").select("*").eq("user_email", email).order("created_at", desc=True).execute()
+        return result.data
+    except Exception as e:
+        print(f"Load error: {e}")
+        return []
 
 def check_password_strength(password):
     score = 0
