@@ -264,6 +264,17 @@ def is_authenticated_user(email):
 def can_make_predictions(email):
     return is_authenticated_user(email)
 
+# ==================== MAKE ADMIN ON CLOUD ====================
+# Add this temporarily, then remove after you become admin
+if st.session_state.get("authenticated", False) and st.session_state.current_user == "abbelkipkirui@gmail.com":
+    users = load_users()
+    if st.session_state.current_user in users:
+        if users[st.session_state.current_user].get("role") != "admin":
+            users[st.session_state.current_user]["role"] = "admin"
+            save_users(users)
+            st.success("You are now an admin on the cloud version!")
+            st.rerun()
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
