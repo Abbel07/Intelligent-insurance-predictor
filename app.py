@@ -987,12 +987,12 @@ def get_exchange_rates():
     return {"USD": 1.0, "EUR": 0.92, "GBP": 0.79, "JPY": 148.5, "KES": 130.0, "TZS": 2500.0}
 
 currency_options = {
-    "USD": "[US] USD - US Dollar",
-    "EUR": "[EU] EUR - Euro",
-    "GBP": "[UK] GBP - British Pound",
-    "JPY": "[JP] JPY - Japanese Yen",
-    "KES": "[KE] KES - Kenyan Shilling",
-    "TZS": "[TZ] TZS - Tanzanian Shilling"
+    "USD": "🇺🇸 - US Dollar",
+    "EUR": "🇪🇺 EUR - Euro",
+    "GBP": "🇪🇺 GBP - British Pound",
+    "JPY": "🇯🇵 JPY - Japanese Yen",
+    "KES": "🇰🇪 KES - Kenyan Shilling",
+    "TZS": "🇹🇿 TZS - Tanzanian Shilling"
 }
 
 with st.sidebar:
