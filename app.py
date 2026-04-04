@@ -251,7 +251,6 @@ def display_password_strength(password):
         st.caption(f"Password Strength: {info['strength']} ({info['score']}/5 criteria met)")
 
 def is_admin(email):
-    """Check if user is admin"""
     if email == "Guest":
         return False
     users = load_users()
@@ -260,11 +259,9 @@ def is_admin(email):
     return False
 
 def is_authenticated_user(email):
-    """Check if user is authenticated (not guest)"""
     return email != "Guest"
 
 def can_make_predictions(email):
-    """All authenticated users can make predictions (Guest cannot)"""
     return is_authenticated_user(email)
 
 if "authenticated" not in st.session_state:
@@ -289,6 +286,32 @@ if "code_sent" not in st.session_state:
     st.session_state.code_sent = False
 if "language" not in st.session_state:
     st.session_state.language = "English"
+if "saved_quotes" not in st.session_state:
+    st.session_state.saved_quotes = []
+if "prediction_made" not in st.session_state:
+    st.session_state.prediction_made = False
+if "last_prediction" not in st.session_state:
+    st.session_state.last_prediction = None
+if "last_input_data" not in st.session_state:
+    st.session_state.last_input_data = None
+if "last_health_score" not in st.session_state:
+    st.session_state.last_health_score = None
+if "age" not in st.session_state:
+    st.session_state.age = 30
+if "bmi" not in st.session_state:
+    st.session_state.bmi = 25.0
+if "children" not in st.session_state:
+    st.session_state.children = 0
+if "bloodpressure" not in st.session_state:
+    st.session_state.bloodpressure = 120
+if "selected_currency" not in st.session_state:
+    st.session_state.selected_currency = "USD"
+if "gender" not in st.session_state:
+    st.session_state.gender = None
+if "diabetic" not in st.session_state:
+    st.session_state.diabetic = None
+if "smoker" not in st.session_state:
+    st.session_state.smoker = None
 
 translations = {
     "English": {
@@ -887,7 +910,7 @@ def show_auth_ui():
                             users[st.session_state.pending_verification_email] = {
                                 "password": st.session_state.pending_verification_password,
                                 "verified": True,
-                                "role": "user",  # Regular user by default
+                                "role": "user",
                                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "saved_quotes": []
                             }
@@ -924,6 +947,13 @@ try:
     
     smoker_positive = le_smoker.classes_[1] if len(le_smoker.classes_) > 1 else None
     diabetic_positive = le_diabetic.classes_[1] if len(le_diabetic.classes_) > 1 else None
+
+    if st.session_state.gender is None:
+        st.session_state.gender = le_gender.classes_[0]
+    if st.session_state.diabetic is None:
+        st.session_state.diabetic = le_diabetic.classes_[0]
+    if st.session_state.smoker is None:
+        st.session_state.smoker = le_smoker.classes_[0]
     
 except Exception as e:
     st.error(f"Error loading models: {e}")
@@ -954,30 +984,11 @@ currency_options = {
     "TZS": "🇹🇿 TZS"
 }
 
-if "age" not in st.session_state:
-    st.session_state.age = 30
-if "bmi" not in st.session_state:
-    st.session_state.bmi = 25.0
-if "children" not in st.session_state:
-    st.session_state.children = 0
-if "bloodpressure" not in st.session_state:
-    st.session_state.bloodpressure = 120
-if "gender" not in st.session_state:
-    st.session_state.gender = le_gender.classes_[0]
-if "diabetic" not in st.session_state:
-    st.session_state.diabetic = le_diabetic.classes_[0]
-if "smoker" not in st.session_state:
-    st.session_state.smoker = le_smoker.classes_[0]
-if "prediction_made" not in st.session_state:
-    st.session_state.prediction_made = False
-if "selected_currency" not in st.session_state:
-    st.session_state.selected_currency = "USD"
-
 with st.sidebar:
     if st.session_state.current_user != "Guest":
         st.write(f"{t('welcome')} {st.session_state.current_user}")
         if is_admin(st.session_state.current_user):
-            st.markdown("🔑 **Admin Mode**")
+            st.markdown("Admin Mode")
     else:
         st.write(f"{t('welcome')} Guest")
     
@@ -1033,12 +1044,10 @@ else:
         t('tab_help')
     ])
 
-
 with tab1:
     user_email = st.session_state.current_user
     
     if can_make_predictions(user_email):
-
         st.write(t('subtitle'))
         st.markdown("---")
         
@@ -1068,12 +1077,12 @@ with tab1:
         
         temp_input = pd.DataFrame({
             "age": [st.session_state.age],
-            "gender": [st.session_state.gender],
+            "gender": [st.session_state.get("gender", le_gender.classes_[0])],
             "bmi": [st.session_state.bmi],
             "bloodpressure": [st.session_state.bloodpressure],
-            "diabetic": [st.session_state.diabetic],
+            "diabetic": [st.session_state.get("diabetic", le_diabetic.classes_[0])],
             "children": [st.session_state.children],
-            "smoker": [st.session_state.smoker]
+            "smoker": [st.session_state.get("smoker", le_smoker.classes_[0])]
         })
         temp_input["gender"] = le_gender.transform(temp_input["gender"])
         temp_input["diabetic"] = le_diabetic.transform(temp_input["diabetic"])
@@ -1203,7 +1212,6 @@ with tab1:
         else:
             st.info(t('click_predict'))
     else:
-
         st.warning(t('guest_restricted'))
         st.info(t('login_required'))
         
@@ -1689,7 +1697,7 @@ with tab3:
                 st.metric(t('average'), f"${df['Premium'].mean():,.2f}")
             
             st.markdown("---")
-
+            
             st.subheader("Your Saved Quotes")
             for idx, q in enumerate(reversed(st.session_state.saved_quotes)):
                 col1, col2 = st.columns([4, 1])
@@ -1701,7 +1709,7 @@ with tab3:
                         for k, v in q["user_inputs"].items():
                             st.write(f"  - {k.capitalize()}: {v}")
                 with col2:
-                    if st.button(f"🗑️ Delete", key=f"del_{idx}"):
+                    if st.button(f"Delete", key=f"del_{idx}"):
                         st.session_state.saved_quotes.pop(len(st.session_state.saved_quotes) - 1 - idx)
                         users = load_users()
                         if user_email in users:
@@ -1763,9 +1771,6 @@ with tab4:
     
     with st.expander(t('q6')):
         st.write(t('a6'))
-    
-    st.divider()
-    st.caption(t('disclaimer'))
 
 if is_admin(st.session_state.current_user):
     with tab5:
@@ -1789,7 +1794,7 @@ if is_admin(st.session_state.current_user):
             st.metric(t('admins'), admins)
         
         st.markdown("---")
-
+        
         st.subheader(t('all_users'))
         user_data = []
         for email, data in users.items():
@@ -1798,7 +1803,7 @@ if is_admin(st.session_state.current_user):
                 "Role": data.get("role", "user"),
                 "Created": data.get("created_at", "Unknown"),
                 "Quotes Saved": len(data.get("saved_quotes", [])),
-                "Verified": "✅" if data.get("verified", False) else "❌"
+                "Verified": "Yes" if data.get("verified", False) else "No"
             })
         st.dataframe(pd.DataFrame(user_data), use_container_width=True)
         
@@ -1832,7 +1837,7 @@ if is_admin(st.session_state.current_user):
                 st.info("No regular users to promote")
         
         st.markdown("---")
-
+        
         st.subheader(t('all_quotes'))
         all_quotes = []
         for email, data in users.items():
