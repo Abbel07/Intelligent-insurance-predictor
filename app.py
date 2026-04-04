@@ -311,6 +311,8 @@ if "diabetic" not in st.session_state:
     st.session_state.diabetic = None
 if "smoker" not in st.session_state:
     st.session_state.smoker = None
+if "region" not in st.session_state:
+    st.session_state.region = "southeast"
 
 # ==================== TRANSLATIONS (English & Swahili Only) ====================
 translations = {
@@ -319,7 +321,7 @@ translations = {
         "logout": "Logout",
         "about_app": "About This App",
         "model": "Model: Best Model",
-        "features": "Features: Age, BMI, Blood Pressure, Children, Gender, Diabetic, Smoker",
+        "features": "Features: Age, BMI, Blood Pressure, Children, Gender, Diabetic, Smoker, Region",
         "understanding": "Understanding Your Quote",
         "tip1": "- Non-smokers pay 20-30% less",
         "tip2": "- Lower BMI = lower premiums",
@@ -338,6 +340,7 @@ translations = {
         "bmi": "BMI",
         "smoker": "Smoker",
         "currency": "Currency",
+        "region": "Region",
         "select_currency": "Select Currency",
         "real_time_estimate": "Real-time Estimate",
         "predict_button": "Predict Payment",
@@ -446,7 +449,7 @@ translations = {
         "logout": "Toka",
         "about_app": "Kuhusu Programu Hii",
         "model": "Modeli: Best Model",
-        "features": "Vipengele: Umri, BMI, Shinikizo la Damu, Watoto, Jinsia, Mgonjwa wa Kisukari, Mvutaji sigara",
+        "features": "Vipengele: Umri, BMI, Shinikizo la Damu, Watoto, Jinsia, Mgonjwa wa Kisukari, Mvutaji sigara, Eneo",
         "understanding": "Kuelewa Nukuu Yako",
         "tip1": "- WasioVuta sigara hulipa 20-30% kidogo",
         "tip2": "- BMI ya chini = malipo ya chini",
@@ -465,6 +468,7 @@ translations = {
         "bmi": "BMI",
         "smoker": "Mvutaji Sigara",
         "currency": "Sarafu",
+        "region": "Eneo",
         "select_currency": "Chagua Sarafu",
         "real_time_estimate": "Makadirio ya Wakati Halisi",
         "predict_button": "Tabiri Malipo",
@@ -733,6 +737,7 @@ try:
     scaler = joblib.load("scaler.pkl")
     le_diabetic = joblib.load("label_encoder_diabetic.pkl")
     le_gender = joblib.load("label_encoder_gender.pkl")
+    le_region = joblib.load("label_encoder_region.pkl")
     le_smoker = joblib.load("label_encoder_smoker.pkl")
     model = joblib.load("best_model.pkl")
     
@@ -751,7 +756,6 @@ except Exception as e:
     st.stop()
 
 users = load_users()
-# No saved_quotes loading anymore - removed completely
 
 @st.cache_data(ttl=3600)
 def get_exchange_rates():
@@ -837,7 +841,7 @@ with tab1:
         
         col1, col2, col3 = st.columns(3)
         with col1:
-           st.session_state.age = st.slider(t('age'), 0, 100, st.session_state.age)
+            st.session_state.age = st.slider(t('age'), 0, 100, st.session_state.age)
         with col2:
             st.session_state.bmi = st.slider(t('bmi'), 15.0, 50.0, st.session_state.bmi, 0.1)
         with col3:
@@ -864,11 +868,17 @@ with tab1:
             "bloodpressure": [st.session_state.bloodpressure],
             "diabetic": [st.session_state.get("diabetic", le_diabetic.classes_[0])],
             "children": [st.session_state.children],
-            "smoker": [st.session_state.get("smoker", le_smoker.classes_[0])]
+            "smoker": [st.session_state.get("smoker", le_smoker.classes_[0])],
+            "region": [st.session_state.get("region", "southeast")]
         })
         temp_input["gender"] = le_gender.transform(temp_input["gender"])
         temp_input["diabetic"] = le_diabetic.transform(temp_input["diabetic"])
         temp_input["smoker"] = le_smoker.transform(temp_input["smoker"])
+        
+        # Encode region using the encoder
+        region_encoded_temp = le_region.transform([st.session_state.get("region", "southeast")])[0]
+        temp_input["region"] = region_encoded_temp
+        
         num_cols = ["age", "bmi", "bloodpressure", "children"]
         temp_input[num_cols] = scaler.transform(temp_input[num_cols])
         
@@ -883,12 +893,13 @@ with tab1:
             with col1:
                 age = st.number_input(t('age'), 0, 100, st.session_state.age)
                 bmi = st.number_input(t('bmi'), 10.0, 60.0, st.session_state.bmi, 0.1)
-                children = st.number_input(t('children'), 0, 8, st.session_state.children)
+                children = st.number_input(t('children'), 0, None, st.session_state.children)
             with col2:
                 bp = st.number_input(t('blood_pressure'), 60, 200, st.session_state.bloodpressure)
                 gender = st.selectbox(t('gender'), le_gender.classes_, index=list(le_gender.classes_).index(st.session_state.gender))
                 diabetic = st.selectbox(t('diabetic'), le_diabetic.classes_, index=list(le_diabetic.classes_).index(st.session_state.diabetic))
                 smoker = st.selectbox(t('smoker'), le_smoker.classes_, index=list(le_smoker.classes_).index(st.session_state.smoker))
+                region = st.selectbox(t('region'), list(le_region.classes_))
             
             submitted = st.form_submit_button(t('predict_button'), use_container_width=True)
             
@@ -900,12 +911,21 @@ with tab1:
                 st.session_state.gender = gender
                 st.session_state.diabetic = diabetic
                 st.session_state.smoker = smoker
+                st.session_state.region = region
         
         if submitted:
+            # Encode region using the encoder
+            region_encoded = le_region.transform([region])[0]
+            
             input_data = pd.DataFrame({
-                "age": [age], "gender": [gender], "bmi": [bmi],
-                "bloodpressure": [bp], "diabetic": [diabetic],
-                "children": [children], "smoker": [smoker]
+                "age": [age],
+                "gender": [gender],
+                "bmi": [bmi],
+                "bloodpressure": [bp],
+                "diabetic": [diabetic],
+                "children": [children],
+                "smoker": [smoker],
+                "region": [region_encoded]
             })
             input_data["gender"] = le_gender.transform(input_data["gender"])
             input_data["diabetic"] = le_diabetic.transform(input_data["diabetic"])
@@ -919,7 +939,7 @@ with tab1:
             st.session_state.last_prediction = float(prediction)
             st.session_state.last_input_data = {
                 "age": age, "bmi": bmi, "children": children, "bloodpressure": bp,
-                "gender": gender, "diabetic": diabetic, "smoker": smoker
+                "gender": gender, "diabetic": diabetic, "smoker": smoker, "region": region
             }
             
             health_score = 100
@@ -996,6 +1016,10 @@ with tab2:
         bp = data["bloodpressure"]
         smoker = data["smoker"]
         diabetic = data["diabetic"]
+        region = data.get("region", "southeast")
+        
+        # Encode region for model
+        region_encoded = le_region.transform([region])[0]
         
         rate = exchange_rates.get(st.session_state.selected_currency, 1.0)
         
@@ -1110,7 +1134,8 @@ with tab2:
                 "bloodpressure": [bp], 
                 "diabetic": [diabetic],
                 "children": [data["children"]], 
-                "smoker": [smoker]
+                "smoker": [smoker],
+                "region": [region_encoded]
             })
             temp["gender"] = le_gender.transform(temp["gender"])
             temp["diabetic"] = le_diabetic.transform(temp["diabetic"])
@@ -1198,7 +1223,8 @@ with tab2:
             "bloodpressure": [bp],
             "diabetic": [diabetic],
             "children": [data["children"]],
-            "smoker": [smoker]
+            "smoker": [smoker],
+            "region": [region_encoded]
         })
         baseline_data["gender"] = le_gender.transform(baseline_data["gender"])
         baseline_data["diabetic"] = le_diabetic.transform(baseline_data["diabetic"])
@@ -1206,6 +1232,7 @@ with tab2:
         baseline_data[num_cols] = scaler.transform(baseline_data[num_cols])
         baseline_pred = model.predict(baseline_data)[0]
         
+        # Age Impact
         age_data = pd.DataFrame({
             "age": [30],
             "gender": [data["gender"]],
@@ -1213,7 +1240,8 @@ with tab2:
             "bloodpressure": [bp],
             "diabetic": [diabetic],
             "children": [data["children"]],
-            "smoker": [smoker]
+            "smoker": [smoker],
+            "region": [region_encoded]
         })
         age_data["gender"] = le_gender.transform(age_data["gender"])
         age_data["diabetic"] = le_diabetic.transform(age_data["diabetic"])
@@ -1223,6 +1251,7 @@ with tab2:
         age_impact = ((baseline_pred - age_pred) / baseline_pred) * 100
         impacts.append(("Age", age_impact))
         
+        # BMI Impact
         bmi_data = pd.DataFrame({
             "age": [age],
             "gender": [data["gender"]],
@@ -1230,7 +1259,8 @@ with tab2:
             "bloodpressure": [bp],
             "diabetic": [diabetic],
             "children": [data["children"]],
-            "smoker": [smoker]
+            "smoker": [smoker],
+            "region": [region_encoded]
         })
         bmi_data["gender"] = le_gender.transform(bmi_data["gender"])
         bmi_data["diabetic"] = le_diabetic.transform(bmi_data["diabetic"])
@@ -1240,6 +1270,7 @@ with tab2:
         bmi_impact = ((baseline_pred - bmi_pred) / baseline_pred) * 100
         impacts.append(("BMI", bmi_impact))
         
+        # Blood Pressure Impact
         bp_data = pd.DataFrame({
             "age": [age],
             "gender": [data["gender"]],
@@ -1247,7 +1278,8 @@ with tab2:
             "bloodpressure": [110],
             "diabetic": [diabetic],
             "children": [data["children"]],
-            "smoker": [smoker]
+            "smoker": [smoker],
+            "region": [region_encoded]
         })
         bp_data["gender"] = le_gender.transform(bp_data["gender"])
         bp_data["diabetic"] = le_diabetic.transform(bp_data["diabetic"])
@@ -1257,6 +1289,7 @@ with tab2:
         bp_impact = ((baseline_pred - bp_pred) / baseline_pred) * 100
         impacts.append(("Blood Pressure", bp_impact))
         
+        # Smoking Impact
         if smoker == smoker_positive:
             nonsmoker_data = pd.DataFrame({
                 "age": [age],
@@ -1265,7 +1298,8 @@ with tab2:
                 "bloodpressure": [bp],
                 "diabetic": [diabetic],
                 "children": [data["children"]],
-                "smoker": [le_smoker.classes_[0]]
+                "smoker": [le_smoker.classes_[0]],
+                "region": [region_encoded]
             })
             nonsmoker_data["gender"] = le_gender.transform(nonsmoker_data["gender"])
             nonsmoker_data["diabetic"] = le_diabetic.transform(nonsmoker_data["diabetic"])
@@ -1281,7 +1315,8 @@ with tab2:
                 "bloodpressure": [bp],
                 "diabetic": [diabetic],
                 "children": [data["children"]],
-                "smoker": [smoker_positive]
+                "smoker": [smoker_positive],
+                "region": [region_encoded]
             })
             smoker_data["gender"] = le_gender.transform(smoker_data["gender"])
             smoker_data["diabetic"] = le_diabetic.transform(smoker_data["diabetic"])
@@ -1291,6 +1326,7 @@ with tab2:
             smoke_impact = ((baseline_pred - smoker_pred) / baseline_pred) * 100
         impacts.append(("Smoking", smoke_impact))
         
+        # Diabetes Impact
         if diabetic == diabetic_positive:
             nondiabetic_data = pd.DataFrame({
                 "age": [age],
@@ -1299,7 +1335,8 @@ with tab2:
                 "bloodpressure": [bp],
                 "diabetic": [le_diabetic.classes_[0]],
                 "children": [data["children"]],
-                "smoker": [smoker]
+                "smoker": [smoker],
+                "region": [region_encoded]
             })
             nondiabetic_data["gender"] = le_gender.transform(nondiabetic_data["gender"])
             nondiabetic_data["diabetic"] = le_diabetic.transform(nondiabetic_data["diabetic"])
@@ -1315,7 +1352,8 @@ with tab2:
                 "bloodpressure": [bp],
                 "diabetic": [diabetic_positive],
                 "children": [data["children"]],
-                "smoker": [smoker]
+                "smoker": [smoker],
+                "region": [region_encoded]
             })
             diabetic_data["gender"] = le_gender.transform(diabetic_data["gender"])
             diabetic_data["diabetic"] = le_diabetic.transform(diabetic_data["diabetic"])
@@ -1373,6 +1411,7 @@ with tab2:
                     'Gender': data.get('gender'),
                     'Diabetic': data.get('diabetic'),
                     'Smoker': data.get('smoker'),
+                    'Region': data.get('region'),
                     'Health Score': float(health)
                 }])
                 st.download_button(
