@@ -15,7 +15,6 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from supabase import create_client, Client
 
 st.set_page_config(
     page_title="Insurance Predict", 
@@ -213,46 +212,6 @@ def save_users(users):
     with open(USER_DATA_FILE, "w") as f:
         json.dump(users, f, indent=2)
 
-# ==================== SUPABASE SETUP ====================
-SUPABASE_URL = "https://tgbxvosatuaknpwmyssg.supabase.co"
-SUPABASE_KEY = "sb_publishable_c8L6qcq-_0cG07JbvBzABg_vwhY_"
-
-@st.cache_resource
-def init_supabase():
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
-
-supabase = init_supabase()
-
-def save_quote_to_supabase(email, user_data, premium, health_score):
-    """Save a quote to Supabase"""
-    try:
-        data = {
-            "user_email": email,
-            "age": user_data["age"],
-            "bmi": user_data["bmi"],
-            "children": user_data["children"],
-            "bloodpressure": user_data["bloodpressure"],
-            "gender": user_data["gender"],
-            "diabetic": user_data["diabetic"],
-            "smoker": user_data["smoker"],
-            "predicted_premium": premium,
-            "health_score": health_score
-        }
-        result = supabase.table("quotes").insert(data).execute()
-        return True
-    except Exception as e:
-        print(f"Supabase error: {e}")
-        return False
-
-def load_quotes_from_supabase(email):
-    """Load quotes for a specific user from Supabase"""
-    try:
-        result = supabase.table("quotes").select("*").eq("user_email", email).order("created_at", desc=True).execute()
-        return result.data
-    except Exception as e:
-        print(f"Load error: {e}")
-        return []
-
 def check_password_strength(password):
     score = 0
     if len(password) >= 8:
@@ -305,17 +264,7 @@ def is_authenticated_user(email):
 def can_make_predictions(email):
     return is_authenticated_user(email)
 
-# ==================== MAKE ADMIN ON CLOUD ====================
-# Add this temporarily, then remove after you become admin
-if st.session_state.get("authenticated", False) and st.session_state.current_user == "abbelkipkirui@gmail.com":
-    users = load_users()
-    if st.session_state.current_user in users:
-        if users[st.session_state.current_user].get("role") != "admin":
-            users[st.session_state.current_user]["role"] = "admin"
-            save_users(users)
-            st.success("You are now an admin on the cloud version!")
-            st.rerun()
-
+# ==================== SESSION STATE INITIALIZATION ====================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
@@ -338,8 +287,6 @@ if "code_sent" not in st.session_state:
     st.session_state.code_sent = False
 if "language" not in st.session_state:
     st.session_state.language = "English"
-if "saved_quotes" not in st.session_state:
-    st.session_state.saved_quotes = []
 if "prediction_made" not in st.session_state:
     st.session_state.prediction_made = False
 if "last_prediction" not in st.session_state:
@@ -365,6 +312,7 @@ if "diabetic" not in st.session_state:
 if "smoker" not in st.session_state:
     st.session_state.smoker = None
 
+# ==================== TRANSLATIONS (English & Swahili Only) ====================
 translations = {
     "English": {
         "welcome": "Welcome:",
@@ -383,7 +331,6 @@ translations = {
         "auth_subtitle": "Sign in to access your insurance estimates",
         "tab_prediction": "Prediction",
         "tab_analytics": "Analytics",
-        "tab_history": "History",
         "tab_help": "Help",
         "tab_admin": "Admin",
         "interactive_calc": "Interactive Calculator",
@@ -394,8 +341,6 @@ translations = {
         "select_currency": "Select Currency",
         "real_time_estimate": "Real-time Estimate",
         "predict_button": "Predict Payment",
-        "save_quote": "Save Quote",
-        "quote_saved": "Quote saved!",
         "health_score": "Health Score",
         "payment_options": "Payment Options",
         "annual": "Annual",
@@ -424,14 +369,6 @@ translations = {
         "download_csv": "Download as CSV",
         "generate_pdf": "Generate PDF Report",
         "prediction_first": "Make a prediction first to see analytics",
-        "saved_quotes": "Saved Quotes",
-        "premium_history": "Premium History",
-        "highest": "Highest",
-        "lowest": "Lowest",
-        "average": "Average",
-        "clear_history": "Clear History",
-        "no_saved_quotes": "No saved quotes yet",
-        "quote_from": "Quote from",
         "faq": "Frequently Asked Questions",
         "q1": "How accurate is this prediction?",
         "a1": "This prediction is based on machine learning models trained on real insurance data. Actual quotes may vary by 10-20% depending on the provider and location.",
@@ -521,7 +458,6 @@ translations = {
         "auth_subtitle": "Ingia ili upate makadirio yako ya bima",
         "tab_prediction": "Utabiri",
         "tab_analytics": "Uchambuzi",
-        "tab_history": "Historia",
         "tab_help": "Usaidizi",
         "tab_admin": "Msimamizi",
         "interactive_calc": "Kikokotoo Maingiliano",
@@ -532,8 +468,6 @@ translations = {
         "select_currency": "Chagua Sarafu",
         "real_time_estimate": "Makadirio ya Wakati Halisi",
         "predict_button": "Tabiri Malipo",
-        "save_quote": "Hifadhi Nukuu",
-        "quote_saved": "Nukuu imehifadhiwa!",
         "health_score": "Alama ya Afya",
         "payment_options": "Chaguzi za Malipo",
         "annual": "Kila Mwaka",
@@ -562,14 +496,6 @@ translations = {
         "download_csv": "Pakua kama CSV",
         "generate_pdf": "Tengeneza Ripoti ya PDF",
         "prediction_first": "Fanya utabiri kwanza ili kuona uchambuzi",
-        "saved_quotes": "Nukuu Zilizohifadhiwa",
-        "premium_history": "Historia ya Malipo",
-        "highest": "Juu Zaidi",
-        "lowest": "Chini Zaidi",
-        "average": "Wastani",
-        "clear_history": "Futa Historia",
-        "no_saved_quotes": "Hakuna nukuu zilizohifadhiwa bado",
-        "quote_from": "Nukuu kutoka",
         "faq": "Maswali Yanayoulizwa Sana",
         "q1": "Utabiri huu ni sahihi kiasi gani?",
         "a1": "Utabiri huu unategemea modeli za kujifunza kwa mashine zilizofunzwa kwa data halisi ya bima. Nukuu halisi zinaweza kutofautiana kwa 10-20% kulingana na mtoa huduma na eneo.",
@@ -598,192 +524,6 @@ translations = {
         "diabetic": "Mgonjwa wa Kisukari",
         "login_required": "Tafadhali ingia ili kufanya utabiri",
         "guest_restricted": "Wageni hawawezi kufanya utabiri. Tafadhali jisajili kwa akaunti ya bure.",
-    },
-    "Spanish": {
-        "welcome": "Bienvenido:",
-        "logout": "Cerrar Sesión",
-        "about_app": "Acerca de Esta Aplicación",
-        "model": "Modelo: Best Model",
-        "features": "Características: Edad, IMC, Presión Arterial, Hijos, Género, Diabético, Fumador",
-        "understanding": "Entendiendo su Cotización",
-        "tip1": "- Los no fumadores pagan 20-30% menos",
-        "tip2": "- IMC más bajo = primas más bajas",
-        "tip3": "- No tener diabetes reduce costos 15-25%",
-        "tip4": "- Presión arterial normal ayuda a reducir tarifas",
-        "tip5": "- Mayor edad = primas más altas",
-        "title": "Predicción de Seguro de Salud",
-        "subtitle": "Ingrese sus datos para obtener un estimado de seguro",
-        "auth_subtitle": "Inicie sesión para acceder a sus estimados de seguro",
-        "tab_prediction": "Predicción",
-        "tab_analytics": "Analítica",
-        "tab_history": "Historial",
-        "tab_help": "Ayuda",
-        "tab_admin": "Administrador",
-        "interactive_calc": "Calculadora Interactiva",
-        "age": "Edad",
-        "bmi": "IMC",
-        "smoker": "Fumador",
-        "currency": "Moneda",
-        "select_currency": "Seleccionar Moneda",
-        "real_time_estimate": "Estimado en Tiempo Real",
-        "predict_button": "Predecir Pago",
-        "save_quote": "Guardar Cotización",
-        "quote_saved": "Cotización guardada!",
-        "health_score": "Puntaje de Salud",
-        "payment_options": "Opciones de Pago",
-        "annual": "Anual",
-        "monthly": "Mensual",
-        "bi_weekly": "Quincenal",
-        "health_tips": "Consejos de Salud",
-        "tip_quit_smoking": "Deje de fumar para ahorrar hasta 30%",
-        "tip_lose_weight": "Pierda peso para ahorrar 15-20%",
-        "tip_lower_bp": "Baje la presión arterial para ahorrar hasta 10%",
-        "tip_manage_diabetes": "Controle la diabetes para ahorrar 15-25%",
-        "tip_great_job": "Buen trabajo! Mantiene hábitos saludables!",
-        "click_predict": "Haga clic en Predecir Pago para ver su estimado",
-        "calculating": "Calculando...",
-        "estimated_payment": "Pago Estimado",
-        "premium_comparison": "Comparación de Primas",
-        "your_premium": "Su Prima",
-        "national_avg": "Promedio Nacional",
-        "your_age_group": "Su Grupo de Edad",
-        "above_average": "Su prima es {pct:.1f}% por encima del promedio para su grupo de edad",
-        "below_average": "Su prima es {pct:.1f}% por debajo del promedio para su grupo de edad",
-        "premium_projection": "Proyección de Prima",
-        "provider_comparison": "Comparación de Proveedores",
-        "impact_analysis": "Análisis de Impacto",
-        "download_report": "Descargar Informe",
-        "download_json": "Descargar como JSON",
-        "download_csv": "Descargar como CSV",
-        "generate_pdf": "Generar Informe PDF",
-        "prediction_first": "Haga una predicción primero para ver análisis",
-        "saved_quotes": "Cotizaciones Guardadas",
-        "premium_history": "Historial de Primas",
-        "highest": "Más Alta",
-        "lowest": "Más Baja",
-        "average": "Promedio",
-        "clear_history": "Borrar Historial",
-        "no_saved_quotes": "Aún no hay cotizaciones guardadas",
-        "quote_from": "Cotización del",
-        "faq": "Preguntas Frecuentes",
-        "disclaimer": "Descargo de responsabilidad: Esta predicción es solo con fines educativos. Las primas de seguro reales dependen de múltiples factores.",
-        "sign_in": "Iniciar Sesión",
-        "create_account": "Crear Cuenta",
-        "email": "Correo Electrónico",
-        "password": "Contraseña",
-        "forgot_password": "Olvidó Contraseña",
-        "continue_as_guest": "Continuar como Invitado",
-        "confirm_password": "Confirmar Contraseña",
-        "send_verification_code": "Enviar Código de Verificación",
-        "verify_email": "Verificar Correo",
-        "enter_6_digit_code": "Ingrese código de 6 dígitos",
-        "verify": "Verificar",
-        "resend_code": "Reenviar Código",
-        "reset_password": "Restablecer Contraseña",
-        "send_reset_code": "Enviar Código de Restablecimiento",
-        "enter_reset_code": "Ingrese el código de restablecimiento",
-        "verify_code": "Verificar Código",
-        "new_password": "Nueva Contraseña",
-        "cancel": "Cancelar",
-        "children": "Hijos",
-        "blood_pressure": "Presión Arterial",
-        "gender": "Género",
-        "diabetic": "Diabético",
-        "login_required": "Inicie sesión para hacer predicciones",
-        "guest_restricted": "Los invitados no pueden hacer predicciones. Regístrese para obtener una cuenta gratuita.",
-    },
-    "French": {
-        "welcome": "Bienvenue:",
-        "logout": "Déconnexion",
-        "about_app": "À propos de cette application",
-        "model": "Modèle: Best Model",
-        "features": "Caractéristiques: Âge, IMC, Tension artérielle, Enfants, Genre, Diabétique, Fumeur",
-        "understanding": "Comprendre votre devis",
-        "tip1": "- Les non-fumeurs paient 20-30% de moins",
-        "tip2": "- IMC plus bas = primes plus basses",
-        "tip3": "- Pas de diabète réduit les coûts de 15-25%",
-        "tip4": "- TA normale aide à réduire les tarifs",
-        "tip5": "- Âge avancé = primes plus élevées",
-        "title": "Prédiction d'Assurance Santé",
-        "subtitle": "Entrez vos détails pour obtenir une estimation d'assurance",
-        "auth_subtitle": "Connectez-vous pour accéder à vos estimations d'assurance",
-        "tab_prediction": "Prédiction",
-        "tab_analytics": "Analytique",
-        "tab_history": "Historique",
-        "tab_help": "Aide",
-        "tab_admin": "Admin",
-        "interactive_calc": "Calculateur Interactif",
-        "age": "Âge",
-        "bmi": "IMC",
-        "smoker": "Fumeur",
-        "currency": "Devise",
-        "select_currency": "Sélectionner la devise",
-        "real_time_estimate": "Estimation en temps réel",
-        "predict_button": "Prédire le Paiement",
-        "save_quote": "Enregistrer le Devis",
-        "quote_saved": "Devis enregistré!",
-        "health_score": "Score de Santé",
-        "payment_options": "Options de Paiement",
-        "annual": "Annuel",
-        "monthly": "Mensuel",
-        "bi_weekly": "Bimensuel",
-        "health_tips": "Conseils Santé",
-        "tip_quit_smoking": "Arrêtez de fumer pour économiser jusqu'à 30%",
-        "tip_lose_weight": "Perdez du poids pour économiser 15-20%",
-        "tip_lower_bp": "Abaissez la tension pour économiser jusqu'à 10%",
-        "tip_manage_diabetes": "Gérez le diabète pour économiser 15-25%",
-        "tip_great_job": "Bon travail! Vous maintenez de saines habitudes!",
-        "click_predict": "Cliquez sur Prédire le Paiement pour voir votre estimation",
-        "calculating": "Calcul en cours...",
-        "estimated_payment": "Paiement Estimé",
-        "premium_comparison": "Comparaison des Primes",
-        "your_premium": "Votre Prime",
-        "national_avg": "Moyenne Nationale",
-        "your_age_group": "Votre Groupe d'Âge",
-        "above_average": "Votre prime est {pct:.1f}% au-dessus de la moyenne pour votre groupe d'âge",
-        "below_average": "Votre prime est {pct:.1f}% en dessous de la moyenne pour votre groupe d'âge",
-        "premium_projection": "Projection de Prime",
-        "provider_comparison": "Comparaison des Fournisseurs",
-        "impact_analysis": "Analyse d'Impact",
-        "download_report": "Télécharger le Rapport",
-        "download_json": "Télécharger en JSON",
-        "download_csv": "Télécharger en CSV",
-        "generate_pdf": "Générer un Rapport PDF",
-        "prediction_first": "Faites d'abord une prédiction pour voir l'analyse",
-        "saved_quotes": "Devis Enregistrés",
-        "premium_history": "Historique des Primes",
-        "highest": "Plus Élevé",
-        "lowest": "Plus Bas",
-        "average": "Moyenne",
-        "clear_history": "Effacer l'Historique",
-        "no_saved_quotes": "Aucun devis enregistré pour l'instant",
-        "quote_from": "Devis du",
-        "faq": "Questions Fréquemment Posées",
-        "disclaimer": "Avertissement: Cette prédiction est à des fins éducatives uniquement.",
-        "sign_in": "Se Connecter",
-        "create_account": "Créer un Compte",
-        "email": "E-mail",
-        "password": "Mot de Passe",
-        "forgot_password": "Mot de Passe Oublié",
-        "continue_as_guest": "Continuer en tant qu'Invité",
-        "confirm_password": "Confirmer le Mot de Passe",
-        "send_verification_code": "Envoyer le Code de Vérification",
-        "verify_email": "Vérifier l'E-mail",
-        "enter_6_digit_code": "Entrez le code à 6 chiffres",
-        "verify": "Vérifier",
-        "resend_code": "Renvoyer le Code",
-        "reset_password": "Réinitialiser le Mot de Passe",
-        "send_reset_code": "Envoyer le Code de Réinitialisation",
-        "enter_reset_code": "Entrez le code de réinitialisation",
-        "verify_code": "Vérifier le Code",
-        "new_password": "Nouveau Mot de Passe",
-        "cancel": "Annuler",
-        "children": "Enfants",
-        "blood_pressure": "Tension Artérielle",
-        "gender": "Genre",
-        "diabetic": "Diabétique",
-        "login_required": "Veuillez vous connecter pour faire des prédictions",
-        "guest_restricted": "Les invités ne peuvent pas faire de prédictions. Veuillez vous inscrire pour un compte gratuit.",
     }
 }
 
@@ -964,7 +704,6 @@ def show_auth_ui():
                                 "verified": True,
                                 "role": "user",
                                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                "saved_quotes": []
                             }
                             save_users(users)
                             st.success("Email verified! You can now sign in.")
@@ -1012,10 +751,7 @@ except Exception as e:
     st.stop()
 
 users = load_users()
-if st.session_state.current_user != "Guest" and st.session_state.current_user in users:
-    st.session_state.saved_quotes = users[st.session_state.current_user].get("saved_quotes", [])
-else:
-    st.session_state.saved_quotes = []
+# No saved_quotes loading anymore - removed completely
 
 @st.cache_data(ttl=3600)
 def get_exchange_rates():
@@ -1028,13 +764,14 @@ def get_exchange_rates():
     return {"USD": 1.0, "EUR": 0.92, "GBP": 0.79, "JPY": 148.5, "KES": 130.0, "TZS": 2500.0}
 
 currency_options = {
-    "USD": "US Dollar (USD)",
-    "EUR": "Euro (EUR)",
-    "GBP": "British Pound (GBP)",
-    "JPY": "Japanese Yen (JPY)",
-    "KES": "Kenyan Shilling (KES)",
-    "TZS": "Tanzanian Shilling (TZS)"
+    "USD": "🇺🇸 USD",
+    "EUR": "🇪🇺 EUR",
+    "GBP": "🇬🇧 GBP",
+    "JPY": "🇯🇵 JPY",
+    "KES": "🇰🇪 KES",
+    "TZS": "🇹🇿 TZS"
 }
+
 with st.sidebar:
     if st.session_state.current_user != "Guest":
         st.write(f"{t('welcome')} {st.session_state.current_user}")
@@ -1044,11 +781,6 @@ with st.sidebar:
         st.write(f"{t('welcome')} Guest")
     
     if st.button(t('logout'), use_container_width=True):
-        if st.session_state.current_user != "Guest":
-            users = load_users()
-            if st.session_state.current_user in users:
-                users[st.session_state.current_user]["saved_quotes"] = st.session_state.saved_quotes
-                save_users(users)
         st.session_state.authenticated = False
         st.session_state.current_user = None
         st.rerun()
@@ -1057,8 +789,8 @@ with st.sidebar:
     
     selected_language = st.selectbox(
         "Language", 
-        ["English", "Swahili", "Spanish", "French"],
-        index=["English", "Swahili", "Spanish", "French"].index(st.session_state.language)
+        ["English", "Swahili"],
+        index=["English", "Swahili"].index(st.session_state.language)
     )
     if selected_language != st.session_state.language:
         st.session_state.language = selected_language
@@ -1080,21 +812,20 @@ with st.sidebar:
 st.title(t('title'))
 
 if is_admin(st.session_state.current_user):
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         t('tab_prediction'), 
         t('tab_analytics'), 
-        t('tab_history'), 
         t('tab_help'),
         t('tab_admin')
     ])
 else:
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3 = st.tabs([
         t('tab_prediction'), 
         t('tab_analytics'), 
-        t('tab_history'), 
         t('tab_help')
     ])
 
+# ==================== TAB 1: PREDICTION ====================
 with tab1:
     user_email = st.session_state.current_user
     
@@ -1106,7 +837,7 @@ with tab1:
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.session_state.age = st.slider(t('age'), 18, 100, st.session_state.age)
+           st.session_state.age = st.slider(t('age'), 0, 100, st.session_state.age)
         with col2:
             st.session_state.bmi = st.slider(t('bmi'), 15.0, 50.0, st.session_state.bmi, 0.1)
         with col3:
@@ -1202,23 +933,6 @@ with tab1:
             converted = prediction * rate
             st.success(f"{t('estimated_payment')}: {st.session_state.selected_currency} {converted:,.2f} (USD {prediction:,.2f})")
             
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                if st.button(t('save_quote'), use_container_width=True):
-                    quote = {
-                        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "user_inputs": st.session_state.last_input_data,
-                        "predicted_premium": float(prediction),
-                        "health_score": health_score
-                    }
-                    st.session_state.saved_quotes.append(quote)
-                    if st.session_state.current_user != "Guest":
-                        users = load_users()
-                        if st.session_state.current_user in users:
-                            users[st.session_state.current_user]["saved_quotes"] = st.session_state.saved_quotes
-                            save_users(users)
-                    st.success(t('quote_saved'))
-            
             st.markdown("---")
             st.subheader(f"{t('health_score')}: {health_score:.0f}/100")
             
@@ -1270,6 +984,7 @@ with tab1:
             st.session_state.authenticated = False
             st.rerun()
 
+# ==================== TAB 2: ANALYTICS ====================
 with tab2:
     if st.session_state.prediction_made:
         pred = st.session_state.last_prediction
@@ -1718,76 +1433,8 @@ with tab2:
     else:
         st.info(t('prediction_first'))
 
+# ==================== TAB 3: HELP ====================
 with tab3:
-    st.subheader(t('saved_quotes'))
-    
-    user_email = st.session_state.current_user
-    
-    if user_email == "Guest":
-        st.info("Please sign in to save and view your quote history.")
-        if st.button("Sign In / Create Account"):
-            st.rerun()
-    else:
-        if st.session_state.saved_quotes:
-            df = pd.DataFrame([{
-                "Date": q["date"],
-                "Premium": q["predicted_premium"],
-                "Age": q["user_inputs"]["age"],
-                "Health Score": q.get("health_score", 0)
-            } for q in st.session_state.saved_quotes])
-            
-            fig = px.line(df, x="Date", y="Premium", title=t('premium_history'), markers=True)
-            st.plotly_chart(fig, use_container_width=True)
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric(t('highest'), f"${df['Premium'].max():,.2f}")
-            with col2:
-                st.metric(t('lowest'), f"${df['Premium'].min():,.2f}")
-            with col3:
-                st.metric(t('average'), f"${df['Premium'].mean():,.2f}")
-            
-            st.markdown("---")
-            
-            st.subheader("Your Saved Quotes")
-            for idx, q in enumerate(reversed(st.session_state.saved_quotes)):
-                col1, col2 = st.columns([4, 1])
-                with col1:
-                    with st.expander(f"{t('quote_from')} {q['date']}"):
-                        st.write(f"**Premium:** ${q['predicted_premium']:,.2f}")
-                        st.write(f"**Health Score:** {q.get('health_score', 0)}/100")
-                        st.write("**Your Details:**")
-                        for k, v in q["user_inputs"].items():
-                            st.write(f"  - {k.capitalize()}: {v}")
-                with col2:
-                    if st.button(f"Delete", key=f"del_{idx}"):
-                        st.session_state.saved_quotes.pop(len(st.session_state.saved_quotes) - 1 - idx)
-                        users = load_users()
-                        if user_email in users:
-                            users[user_email]["saved_quotes"] = st.session_state.saved_quotes
-                            save_users(users)
-                        st.success("Quote deleted!")
-                        st.rerun()
-            
-            st.markdown("---")
-            
-            if st.button(t('clear_history'), use_container_width=True):
-                st.session_state.saved_quotes = []
-                users = load_users()
-                if user_email in users:
-                    users[user_email]["saved_quotes"] = []
-                    save_users(users)
-                st.success("All quotes cleared!")
-                st.rerun()
-        else:
-            st.info(t('no_saved_quotes'))
-            
-            with st.expander("How to save a quote"):
-                st.write("1. Make a prediction")
-                st.write("2. Click **Save Quote**")
-                st.write("3. Your quote will appear here")
-
-with tab4:
     st.subheader(t('faq'))
     
     with st.expander(t('q1')):
@@ -1822,25 +1469,26 @@ with tab4:
     
     with st.expander(t('q6')):
         st.write(t('a6'))
+    
+    st.divider()
+    st.caption(t('disclaimer'))
 
+# ==================== TAB 4: ADMIN ====================
 if is_admin(st.session_state.current_user):
-    with tab5:
+    with tab4:
         st.subheader("Admin Dashboard")
         st.success("Welcome, Administrator! You have full system access.")
         
         users = load_users()
         total_users = len(users)
-        total_quotes = sum(len(u.get("saved_quotes", [])) for u in users.values())
         
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
         with col1:
             st.metric(t('total_users'), total_users)
         with col2:
-            st.metric(t('total_quotes'), total_quotes)
-        with col3:
             regular_users = len([u for u in users.values() if u.get("role") == "user"])
             st.metric(t('regular_users'), regular_users)
-        with col4:
+        with col3:
             admins = len([u for u in users.values() if u.get("role") == "admin"])
             st.metric(t('admins'), admins)
         
@@ -1853,7 +1501,6 @@ if is_admin(st.session_state.current_user):
                 "Email": email,
                 "Role": data.get("role", "user"),
                 "Created": data.get("created_at", "Unknown"),
-                "Quotes Saved": len(data.get("saved_quotes", [])),
                 "Verified": "Yes" if data.get("verified", False) else "No"
             })
         st.dataframe(pd.DataFrame(user_data), use_container_width=True)
@@ -1886,31 +1533,6 @@ if is_admin(st.session_state.current_user):
                     st.rerun()
             else:
                 st.info("No regular users to promote")
-        
-        st.markdown("---")
-        
-        st.subheader(t('all_quotes'))
-        all_quotes = []
-        for email, data in users.items():
-            for quote in data.get("saved_quotes", []):
-                all_quotes.append({
-                    "User": email,
-                    "Date": quote["date"],
-                    "Premium": f"${quote['predicted_premium']:,.2f}",
-                    "Health Score": quote.get("health_score", 0)
-                })
-        
-        if all_quotes:
-            st.dataframe(pd.DataFrame(all_quotes), use_container_width=True)
-            
-            if st.button(t('clear_all_quotes'), use_container_width=True):
-                for email in users:
-                    users[email]["saved_quotes"] = []
-                save_users(users)
-                st.success("All quotes cleared from all users!")
-                st.rerun()
-        else:
-            st.info("No quotes saved by any user yet")
         
         st.markdown("---")
         st.caption("Admin actions are permanent and cannot be undone.")
