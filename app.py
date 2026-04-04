@@ -250,6 +250,23 @@ def display_password_strength(password):
         st.progress(info['progress'] / 100)
         st.caption(f"Password Strength: {info['strength']} ({info['score']}/5 criteria met)")
 
+def is_admin(email):
+    """Check if user is admin"""
+    if email == "Guest":
+        return False
+    users = load_users()
+    if email in users:
+        return users[email].get("role") == "admin"
+    return False
+
+def is_authenticated_user(email):
+    """Check if user is authenticated (not guest)"""
+    return email != "Guest"
+
+def can_make_predictions(email):
+    """All authenticated users can make predictions (Guest cannot)"""
+    return is_authenticated_user(email)
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
@@ -293,6 +310,7 @@ translations = {
         "tab_analytics": "Analytics",
         "tab_history": "History",
         "tab_help": "Help",
+        "tab_admin": "Admin",
         "interactive_calc": "Interactive Calculator",
         "age": "Age",
         "bmi": "BMI",
@@ -390,6 +408,26 @@ translations = {
         "blood_pressure": "Blood Pressure",
         "gender": "Gender",
         "diabetic": "Diabetic",
+        "login_required": "Please sign in to make predictions",
+        "guest_restricted": "Guest accounts cannot make predictions. Please sign up for a free account.",
+        "admin_only": "Admin Access Only",
+        "total_users": "Total Users",
+        "total_quotes": "Total Quotes",
+        "regular_users": "Regular Users",
+        "admins": "Admins",
+        "all_users": "All Users",
+        "role": "Role",
+        "created": "Created",
+        "quotes_saved": "Quotes Saved",
+        "verified": "Verified",
+        "delete_user": "Delete User",
+        "select_user": "Select user to delete",
+        "make_admin": "Make User Admin",
+        "select_user_promote": "Select user to promote",
+        "all_quotes": "All Quotes (All Users)",
+        "clear_all_quotes": "Clear ALL Quotes from ALL Users",
+        "access_denied": "Access Denied",
+        "admin_warning": "This section is only available to system administrators.",
     },
     "Swahili": {
         "welcome": "Karibu:",
@@ -410,6 +448,7 @@ translations = {
         "tab_analytics": "Uchambuzi",
         "tab_history": "Historia",
         "tab_help": "Usaidizi",
+        "tab_admin": "Msimamizi",
         "interactive_calc": "Kikokotoo Maingiliano",
         "age": "Umri",
         "bmi": "BMI",
@@ -459,31 +498,6 @@ translations = {
         "faq": "Maswali Yanayoulizwa Sana",
         "q1": "Utabiri huu ni sahihi kiasi gani?",
         "a1": "Utabiri huu unategemea modeli za kujifunza kwa mashine zilizofunzwa kwa data halisi ya bima. Nukuu halisi zinaweza kutofautiana kwa 10-20% kulingana na mtoa huduma na eneo.",
-        "q2": "Ni mambo gani yanaathiri malipo ya bima zaidi?",
-        "a2": "Mambo muhimu zaidi ni:",
-        "factor1": "- Hali ya uvutaji sigara (athari 20-30%)",
-        "factor2": "- Umri (athari 10-25%)",
-        "factor3": "- BMI (athari 15-20%)",
-        "factor4": "- Hali ya kisukari (athari 15-20%)",
-        "factor5": "- Shinikizo la damu (athari 5-10%)",
-        "q3": "Je, ninaweza kupata bima ikiwa nina magonjwa ya muda mrefu?",
-        "a3": "Ndiyo, lakini malipo yanaweza kuwa makubwa. Daima eleza hali zako zote za kiafya kwa nukuu sahihi.",
-        "q4": "Je, ninawezaje kupunguza malipo yangu ya bima?",
-        "a4": "Hapa kuna njia zilizothibitishwa za kupunguza malipo:",
-        "reduce1": "- Acha kuvuta sigara",
-        "reduce2": "- Dumisha BMI yenye afya kupitia lishe na mazoezi",
-        "reduce3": "- Dhibiti magonjwa sugu kama kisukari na shinikizo la damu",
-        "reduce4": "- Linganisha nukuu kutoka kwa watoa huduma mbalimbali",
-        "reduce5": "- Fikiria makato makubwa kwa malipo ya chini ya kila mwezi",
-        "q5": "Alama ya afya inafanya kazi gani?",
-        "a5": "Alama ya afya inahesabiwa kulingana na:",
-        "score1": "- Hali ya uvutaji sigara: punguzo la pointi 25",
-        "score2": "- Hali ya kisukari: punguzo la pointi 20",
-        "score3": "- BMI juu ya 25: pointi 2 kwa kila pointi juu ya 25",
-        "score4": "- Shinikizo la damu juu ya 120: pointi 0.5 kwa kila pointi juu ya 120",
-        "score5": "Alama za juu zinaonyesha afya bora na uwezekano wa malipo ya chini.",
-        "q6": "Programu hii ni bure kutumia?",
-        "a6": "Ndiyo! Hii ni zana ya kielimu ya bure. Kwa nukuu halisi, tafadhali wasiliana na wataalamu wa bima waliosajiliwa.",
         "disclaimer": "Kanusho: Utabiri huu ni kwa madhumuni ya kielimu tu. Malipo halisi ya bima yanategemea mambo mengi ikiwemo historia ya matibabu, eneo, na sera za mtoa huduma.",
         "sign_in": "Ingia",
         "create_account": "Tengeneza Akaunti",
@@ -507,6 +521,8 @@ translations = {
         "blood_pressure": "Shinikizo la Damu",
         "gender": "Jinsia",
         "diabetic": "Mgonjwa wa Kisukari",
+        "login_required": "Tafadhali ingia ili kufanya utabiri",
+        "guest_restricted": "Wageni hawawezi kufanya utabiri. Tafadhali jisajili kwa akaunti ya bure.",
     },
     "Spanish": {
         "welcome": "Bienvenido:",
@@ -527,6 +543,7 @@ translations = {
         "tab_analytics": "Analítica",
         "tab_history": "Historial",
         "tab_help": "Ayuda",
+        "tab_admin": "Administrador",
         "interactive_calc": "Calculadora Interactiva",
         "age": "Edad",
         "bmi": "IMC",
@@ -574,8 +591,6 @@ translations = {
         "no_saved_quotes": "Aún no hay cotizaciones guardadas",
         "quote_from": "Cotización del",
         "faq": "Preguntas Frecuentes",
-        "q1": "¿Qué tan precisa es esta predicción?",
-        "a1": "Esta predicción está basada en modelos de aprendizaje automático entrenados con datos reales de seguros. Las cotizaciones reales pueden variar entre 10-20% dependiendo del proveedor y la ubicación.",
         "disclaimer": "Descargo de responsabilidad: Esta predicción es solo con fines educativos. Las primas de seguro reales dependen de múltiples factores.",
         "sign_in": "Iniciar Sesión",
         "create_account": "Crear Cuenta",
@@ -599,6 +614,8 @@ translations = {
         "blood_pressure": "Presión Arterial",
         "gender": "Género",
         "diabetic": "Diabético",
+        "login_required": "Inicie sesión para hacer predicciones",
+        "guest_restricted": "Los invitados no pueden hacer predicciones. Regístrese para obtener una cuenta gratuita.",
     },
     "French": {
         "welcome": "Bienvenue:",
@@ -619,6 +636,7 @@ translations = {
         "tab_analytics": "Analytique",
         "tab_history": "Historique",
         "tab_help": "Aide",
+        "tab_admin": "Admin",
         "interactive_calc": "Calculateur Interactif",
         "age": "Âge",
         "bmi": "IMC",
@@ -689,6 +707,8 @@ translations = {
         "blood_pressure": "Tension Artérielle",
         "gender": "Genre",
         "diabetic": "Diabétique",
+        "login_required": "Veuillez vous connecter pour faire des prédictions",
+        "guest_restricted": "Les invités ne peuvent pas faire de prédictions. Veuillez vous inscrire pour un compte gratuit.",
     }
 }
 
@@ -867,6 +887,7 @@ def show_auth_ui():
                             users[st.session_state.pending_verification_email] = {
                                 "password": st.session_state.pending_verification_password,
                                 "verified": True,
+                                "role": "user",  # Regular user by default
                                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "saved_quotes": []
                             }
@@ -955,6 +976,8 @@ if "selected_currency" not in st.session_state:
 with st.sidebar:
     if st.session_state.current_user != "Guest":
         st.write(f"{t('welcome')} {st.session_state.current_user}")
+        if is_admin(st.session_state.current_user):
+            st.markdown("🔑 **Admin Mode**")
     else:
         st.write(f"{t('welcome')} Guest")
     
@@ -994,173 +1017,199 @@ with st.sidebar:
 
 st.title(t('title'))
 
-tab1, tab2, tab3, tab4 = st.tabs([t('tab_prediction'), t('tab_analytics'), t('tab_history'), t('tab_help')])
+if is_admin(st.session_state.current_user):
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        t('tab_prediction'), 
+        t('tab_analytics'), 
+        t('tab_history'), 
+        t('tab_help'),
+        t('tab_admin')
+    ])
+else:
+    tab1, tab2, tab3, tab4 = st.tabs([
+        t('tab_prediction'), 
+        t('tab_analytics'), 
+        t('tab_history'), 
+        t('tab_help')
+    ])
+
 
 with tab1:
+    user_email = st.session_state.current_user
+    
+    if can_make_predictions(user_email):
 
-    st.write(t('subtitle'))
-    st.markdown("---")
-    
-    st.subheader(t('interactive_calc'))
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.session_state.age = st.slider(t('age'), 18, 100, st.session_state.age)
-    with col2:
-        st.session_state.bmi = st.slider(t('bmi'), 15.0, 50.0, st.session_state.bmi, 0.1)
-    with col3:
-        smoker_val = st.toggle(t('smoker'), value=(st.session_state.smoker == smoker_positive))
-        st.session_state.smoker = smoker_positive if smoker_val else le_smoker.classes_[0]
-    
-    st.markdown("---")
-    st.subheader(t('currency'))
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.session_state.selected_currency = st.selectbox(
-            t('select_currency'),
-            options=list(currency_options.keys()),
-            format_func=lambda x: currency_options[x]
-        )
-    
-    exchange_rates = get_exchange_rates()
-    
-    temp_input = pd.DataFrame({
-        "age": [st.session_state.age],
-        "gender": [st.session_state.gender],
-        "bmi": [st.session_state.bmi],
-        "bloodpressure": [st.session_state.bloodpressure],
-        "diabetic": [st.session_state.diabetic],
-        "children": [st.session_state.children],
-        "smoker": [st.session_state.smoker]
-    })
-    temp_input["gender"] = le_gender.transform(temp_input["gender"])
-    temp_input["diabetic"] = le_diabetic.transform(temp_input["diabetic"])
-    temp_input["smoker"] = le_smoker.transform(temp_input["smoker"])
-    num_cols = ["age", "bmi", "bloodpressure", "children"]
-    temp_input[num_cols] = scaler.transform(temp_input[num_cols])
-    
-    real_time = model.predict(temp_input)[0]
-    rate = exchange_rates.get(st.session_state.selected_currency, 1.0)
-    st.info(f"{t('real_time_estimate')}: {st.session_state.selected_currency} {real_time * rate:,.2f} (USD {real_time:,.2f})")
-    
-    st.markdown("---")
-    
-    with st.form("input_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            age = st.number_input(t('age'), 0, 100, st.session_state.age)
-            bmi = st.number_input(t('bmi'), 10.0, 60.0, st.session_state.bmi, 0.1)
-            children = st.number_input(t('children'), 0, 8, st.session_state.children)
-        with col2:
-            bp = st.number_input(t('blood_pressure'), 60, 200, st.session_state.bloodpressure)
-            gender = st.selectbox(t('gender'), le_gender.classes_, index=list(le_gender.classes_).index(st.session_state.gender))
-            diabetic = st.selectbox(t('diabetic'), le_diabetic.classes_, index=list(le_diabetic.classes_).index(st.session_state.diabetic))
-            smoker = st.selectbox(t('smoker'), le_smoker.classes_, index=list(le_smoker.classes_).index(st.session_state.smoker))
-        
-        submitted = st.form_submit_button(t('predict_button'), use_container_width=True)
-        
-        if submitted:
-            st.session_state.age = age
-            st.session_state.bmi = bmi
-            st.session_state.children = children
-            st.session_state.bloodpressure = bp
-            st.session_state.gender = gender
-            st.session_state.diabetic = diabetic
-            st.session_state.smoker = smoker
-    
-    if submitted:
-        input_data = pd.DataFrame({
-            "age": [age], "gender": [gender], "bmi": [bmi],
-            "bloodpressure": [bp], "diabetic": [diabetic],
-            "children": [children], "smoker": [smoker]
-        })
-        input_data["gender"] = le_gender.transform(input_data["gender"])
-        input_data["diabetic"] = le_diabetic.transform(input_data["diabetic"])
-        input_data["smoker"] = le_smoker.transform(input_data["smoker"])
-        input_data[num_cols] = scaler.transform(input_data[num_cols])
-        
-        with st.spinner(t('calculating')):
-            prediction = model.predict(input_data)[0]
-        
-        st.session_state.prediction_made = True
-        st.session_state.last_prediction = float(prediction)
-        st.session_state.last_input_data = {
-            "age": age, "bmi": bmi, "children": children, "bloodpressure": bp,
-            "gender": gender, "diabetic": diabetic, "smoker": smoker
-        }
-        
-        health_score = 100
-        health_score -= (smoker == smoker_positive) * 25
-        health_score -= (diabetic == diabetic_positive) * 20
-        health_score -= max(0, (bmi - 25)) * 2
-        health_score -= max(0, (bp - 120)) * 0.5
-        health_score = max(0, min(100, health_score))
-        st.session_state.last_health_score = float(health_score)
-        
-        converted = prediction * rate
-        st.success(f"{t('estimated_payment')}: {st.session_state.selected_currency} {converted:,.2f} (USD {prediction:,.2f})")
-        
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            if st.button(t('save_quote'), use_container_width=True):
-                quote = {
-                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "user_inputs": st.session_state.last_input_data,
-                    "predicted_premium": float(prediction),
-                    "health_score": health_score
-                }
-                st.session_state.saved_quotes.append(quote)
-                if st.session_state.current_user != "Guest":
-                    users = load_users()
-                    if st.session_state.current_user in users:
-                        users[st.session_state.current_user]["saved_quotes"] = st.session_state.saved_quotes
-                        save_users(users)
-                st.success(t('quote_saved'))
-        
+        st.write(t('subtitle'))
         st.markdown("---")
-        st.subheader(f"{t('health_score')}: {health_score:.0f}/100")
         
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=health_score,
-            title={"text": t('health_score')},
-            domain={"x": [0, 1], "y": [0, 1]},
-            gauge={"axis": {"range": [0, 100]}, "bar": {"color": "darkgreen"}}
-        ))
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.markdown("---")
-        st.subheader(t('payment_options'))
+        st.subheader(t('interactive_calc'))
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric(t('annual'), f"{st.session_state.selected_currency} {prediction * rate:,.2f}")
+            st.session_state.age = st.slider(t('age'), 18, 100, st.session_state.age)
         with col2:
-            st.metric(t('monthly'), f"{st.session_state.selected_currency} {prediction * rate / 12:,.2f}")
+            st.session_state.bmi = st.slider(t('bmi'), 15.0, 50.0, st.session_state.bmi, 0.1)
         with col3:
-            st.metric(t('bi_weekly'), f"{st.session_state.selected_currency} {prediction * rate / 26:,.2f}")
+            smoker_val = st.toggle(t('smoker'), value=(st.session_state.smoker == smoker_positive))
+            st.session_state.smoker = smoker_positive if smoker_val else le_smoker.classes_[0]
         
         st.markdown("---")
-        st.subheader(t('health_tips'))
+        st.subheader(t('currency'))
         
-        tips = []
-        if smoker == smoker_positive:
-            tips.append(t('tip_quit_smoking'))
-        if bmi > 30:
-            tips.append(t('tip_lose_weight'))
-        if bp > 140:
-            tips.append(t('tip_lower_bp'))
-        if diabetic == diabetic_positive:
-            tips.append(t('tip_manage_diabetes'))
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.session_state.selected_currency = st.selectbox(
+                t('select_currency'),
+                options=list(currency_options.keys()),
+                format_func=lambda x: currency_options[x]
+            )
         
-        if tips:
-            for tip in tips:
-                st.write(f"- {tip}")
+        exchange_rates = get_exchange_rates()
+        
+        temp_input = pd.DataFrame({
+            "age": [st.session_state.age],
+            "gender": [st.session_state.gender],
+            "bmi": [st.session_state.bmi],
+            "bloodpressure": [st.session_state.bloodpressure],
+            "diabetic": [st.session_state.diabetic],
+            "children": [st.session_state.children],
+            "smoker": [st.session_state.smoker]
+        })
+        temp_input["gender"] = le_gender.transform(temp_input["gender"])
+        temp_input["diabetic"] = le_diabetic.transform(temp_input["diabetic"])
+        temp_input["smoker"] = le_smoker.transform(temp_input["smoker"])
+        num_cols = ["age", "bmi", "bloodpressure", "children"]
+        temp_input[num_cols] = scaler.transform(temp_input[num_cols])
+        
+        real_time = model.predict(temp_input)[0]
+        rate = exchange_rates.get(st.session_state.selected_currency, 1.0)
+        st.info(f"{t('real_time_estimate')}: {st.session_state.selected_currency} {real_time * rate:,.2f} (USD {real_time:,.2f})")
+        
+        st.markdown("---")
+        
+        with st.form("input_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                age = st.number_input(t('age'), 0, 100, st.session_state.age)
+                bmi = st.number_input(t('bmi'), 10.0, 60.0, st.session_state.bmi, 0.1)
+                children = st.number_input(t('children'), 0, 8, st.session_state.children)
+            with col2:
+                bp = st.number_input(t('blood_pressure'), 60, 200, st.session_state.bloodpressure)
+                gender = st.selectbox(t('gender'), le_gender.classes_, index=list(le_gender.classes_).index(st.session_state.gender))
+                diabetic = st.selectbox(t('diabetic'), le_diabetic.classes_, index=list(le_diabetic.classes_).index(st.session_state.diabetic))
+                smoker = st.selectbox(t('smoker'), le_smoker.classes_, index=list(le_smoker.classes_).index(st.session_state.smoker))
+            
+            submitted = st.form_submit_button(t('predict_button'), use_container_width=True)
+            
+            if submitted:
+                st.session_state.age = age
+                st.session_state.bmi = bmi
+                st.session_state.children = children
+                st.session_state.bloodpressure = bp
+                st.session_state.gender = gender
+                st.session_state.diabetic = diabetic
+                st.session_state.smoker = smoker
+        
+        if submitted:
+            input_data = pd.DataFrame({
+                "age": [age], "gender": [gender], "bmi": [bmi],
+                "bloodpressure": [bp], "diabetic": [diabetic],
+                "children": [children], "smoker": [smoker]
+            })
+            input_data["gender"] = le_gender.transform(input_data["gender"])
+            input_data["diabetic"] = le_diabetic.transform(input_data["diabetic"])
+            input_data["smoker"] = le_smoker.transform(input_data["smoker"])
+            input_data[num_cols] = scaler.transform(input_data[num_cols])
+            
+            with st.spinner(t('calculating')):
+                prediction = model.predict(input_data)[0]
+            
+            st.session_state.prediction_made = True
+            st.session_state.last_prediction = float(prediction)
+            st.session_state.last_input_data = {
+                "age": age, "bmi": bmi, "children": children, "bloodpressure": bp,
+                "gender": gender, "diabetic": diabetic, "smoker": smoker
+            }
+            
+            health_score = 100
+            health_score -= (smoker == smoker_positive) * 25
+            health_score -= (diabetic == diabetic_positive) * 20
+            health_score -= max(0, (bmi - 25)) * 2
+            health_score -= max(0, (bp - 120)) * 0.5
+            health_score = max(0, min(100, health_score))
+            st.session_state.last_health_score = float(health_score)
+            
+            converted = prediction * rate
+            st.success(f"{t('estimated_payment')}: {st.session_state.selected_currency} {converted:,.2f} (USD {prediction:,.2f})")
+            
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if st.button(t('save_quote'), use_container_width=True):
+                    quote = {
+                        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "user_inputs": st.session_state.last_input_data,
+                        "predicted_premium": float(prediction),
+                        "health_score": health_score
+                    }
+                    st.session_state.saved_quotes.append(quote)
+                    if st.session_state.current_user != "Guest":
+                        users = load_users()
+                        if st.session_state.current_user in users:
+                            users[st.session_state.current_user]["saved_quotes"] = st.session_state.saved_quotes
+                            save_users(users)
+                    st.success(t('quote_saved'))
+            
+            st.markdown("---")
+            st.subheader(f"{t('health_score')}: {health_score:.0f}/100")
+            
+            fig = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=health_score,
+                title={"text": t('health_score')},
+                domain={"x": [0, 1], "y": [0, 1]},
+                gauge={"axis": {"range": [0, 100]}, "bar": {"color": "darkgreen"}}
+            ))
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.markdown("---")
+            st.subheader(t('payment_options'))
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric(t('annual'), f"{st.session_state.selected_currency} {prediction * rate:,.2f}")
+            with col2:
+                st.metric(t('monthly'), f"{st.session_state.selected_currency} {prediction * rate / 12:,.2f}")
+            with col3:
+                st.metric(t('bi_weekly'), f"{st.session_state.selected_currency} {prediction * rate / 26:,.2f}")
+            
+            st.markdown("---")
+            st.subheader(t('health_tips'))
+            
+            tips = []
+            if smoker == smoker_positive:
+                tips.append(t('tip_quit_smoking'))
+            if bmi > 30:
+                tips.append(t('tip_lose_weight'))
+            if bp > 140:
+                tips.append(t('tip_lower_bp'))
+            if diabetic == diabetic_positive:
+                tips.append(t('tip_manage_diabetes'))
+            
+            if tips:
+                for tip in tips:
+                    st.write(f"- {tip}")
+            else:
+                st.write(t('tip_great_job'))
         else:
-            st.write(t('tip_great_job'))
+            st.info(t('click_predict'))
     else:
-        st.info(t('click_predict'))
+
+        st.warning(t('guest_restricted'))
+        st.info(t('login_required'))
+        
+        if st.button("Sign In / Create Account", use_container_width=True):
+            st.session_state.authenticated = False
+            st.rerun()
 
 with tab2:
     if st.session_state.prediction_made:
@@ -1193,8 +1242,6 @@ with tab2:
             "Amount": [pred, 12000, avg]
         }
         df = pd.DataFrame(compare_data)
-        
-        colors = ['#2E86AB' if cat == t('your_premium') else '#A23B72' if cat == t('national_avg') else '#F18F01' for cat in df["Category"]]
         
         fig = px.bar(df, x="Category", y="Amount", 
                      title=f"{t('premium_comparison')} - {t('your_premium')}: {st.session_state.selected_currency} {pred * rate:,.0f}",
@@ -1453,7 +1500,6 @@ with tab2:
             nonsmoker_pred = model.predict(nonsmoker_data)[0]
             smoke_impact = ((baseline_pred - nonsmoker_pred) / baseline_pred) * 100
         else:
-
             smoker_data = pd.DataFrame({
                 "age": [age],
                 "gender": [data["gender"]],
@@ -1488,7 +1534,6 @@ with tab2:
             nondiabetic_pred = model.predict(nondiabetic_data)[0]
             diabetic_impact = ((baseline_pred - nondiabetic_pred) / baseline_pred) * 100
         else:
-
             diabetic_data = pd.DataFrame({
                 "age": [age],
                 "gender": [data["gender"]],
@@ -1507,8 +1552,6 @@ with tab2:
         impacts.append(("Diabetes", diabetic_impact))
         
         impact_df = pd.DataFrame(impacts, columns=["Factor", "Impact (%)"])
-
-        colors = ['red' if x < 0 else 'green' for x in impact_df["Impact (%)"]]
         
         fig = px.bar(impact_df, x="Factor", y="Impact (%)", 
                      title=t('impact_analysis'),
@@ -1517,7 +1560,7 @@ with tab2:
                      color_continuous_scale=["red", "yellow", "green"])
         fig.add_hline(y=0, line_dash="dash", line_color="black")
         st.plotly_chart(fig, use_container_width=True)
-
+        
         st.caption("""
         **How to read this chart:**
         - **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
@@ -1618,43 +1661,72 @@ with tab2:
 
 with tab3:
     st.subheader(t('saved_quotes'))
-    if st.session_state.saved_quotes:
-        df = pd.DataFrame([{
-            "Date": q["date"],
-            "Premium": q["predicted_premium"],
-            "Age": q["user_inputs"]["age"],
-            "Health Score": q.get("health_score", 0)
-        } for q in st.session_state.saved_quotes])
-        
-        fig = px.line(df, x="Date", y="Premium", title=t('premium_history'), markers=True)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric(t('highest'), f"${df['Premium'].max():,.2f}")
-        with col2:
-            st.metric(t('lowest'), f"${df['Premium'].min():,.2f}")
-        with col3:
-            st.metric(t('average'), f"${df['Premium'].mean():,.2f}")
-        
-        st.markdown("---")
-        for q in reversed(st.session_state.saved_quotes[-5:]):
-            with st.expander(f"{t('quote_from')} {q['date']}"):
-                st.write(f"Premium: ${q['predicted_premium']:,.2f}")
-                for k, v in q["user_inputs"].items():
-                    st.write(f"{k}: {v}")
-                st.write(f"{t('health_score')}: {q.get('health_score', 0):.0f}/100")
-        
-        if st.button(t('clear_history'), use_container_width=True):
-            st.session_state.saved_quotes = []
-            if st.session_state.current_user != "Guest":
-                users = load_users()
-                if st.session_state.current_user in users:
-                    users[st.session_state.current_user]["saved_quotes"] = []
-                    save_users(users)
+    
+    user_email = st.session_state.current_user
+    
+    if user_email == "Guest":
+        st.info("Please sign in to save and view your quote history.")
+        if st.button("Sign In / Create Account"):
             st.rerun()
     else:
-        st.info(t('no_saved_quotes'))
+        if st.session_state.saved_quotes:
+            df = pd.DataFrame([{
+                "Date": q["date"],
+                "Premium": q["predicted_premium"],
+                "Age": q["user_inputs"]["age"],
+                "Health Score": q.get("health_score", 0)
+            } for q in st.session_state.saved_quotes])
+            
+            fig = px.line(df, x="Date", y="Premium", title=t('premium_history'), markers=True)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric(t('highest'), f"${df['Premium'].max():,.2f}")
+            with col2:
+                st.metric(t('lowest'), f"${df['Premium'].min():,.2f}")
+            with col3:
+                st.metric(t('average'), f"${df['Premium'].mean():,.2f}")
+            
+            st.markdown("---")
+
+            st.subheader("Your Saved Quotes")
+            for idx, q in enumerate(reversed(st.session_state.saved_quotes)):
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    with st.expander(f"{t('quote_from')} {q['date']}"):
+                        st.write(f"**Premium:** ${q['predicted_premium']:,.2f}")
+                        st.write(f"**Health Score:** {q.get('health_score', 0)}/100")
+                        st.write("**Your Details:**")
+                        for k, v in q["user_inputs"].items():
+                            st.write(f"  - {k.capitalize()}: {v}")
+                with col2:
+                    if st.button(f"🗑️ Delete", key=f"del_{idx}"):
+                        st.session_state.saved_quotes.pop(len(st.session_state.saved_quotes) - 1 - idx)
+                        users = load_users()
+                        if user_email in users:
+                            users[user_email]["saved_quotes"] = st.session_state.saved_quotes
+                            save_users(users)
+                        st.success("Quote deleted!")
+                        st.rerun()
+            
+            st.markdown("---")
+            
+            if st.button(t('clear_history'), use_container_width=True):
+                st.session_state.saved_quotes = []
+                users = load_users()
+                if user_email in users:
+                    users[user_email]["saved_quotes"] = []
+                    save_users(users)
+                st.success("All quotes cleared!")
+                st.rerun()
+        else:
+            st.info(t('no_saved_quotes'))
+            
+            with st.expander("How to save a quote"):
+                st.write("1. Make a prediction")
+                st.write("2. Click **Save Quote**")
+                st.write("3. Your quote will appear here")
 
 with tab4:
     st.subheader(t('faq'))
@@ -1694,3 +1766,95 @@ with tab4:
     
     st.divider()
     st.caption(t('disclaimer'))
+
+if is_admin(st.session_state.current_user):
+    with tab5:
+        st.subheader("Admin Dashboard")
+        st.success("Welcome, Administrator! You have full system access.")
+        
+        users = load_users()
+        total_users = len(users)
+        total_quotes = sum(len(u.get("saved_quotes", [])) for u in users.values())
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric(t('total_users'), total_users)
+        with col2:
+            st.metric(t('total_quotes'), total_quotes)
+        with col3:
+            regular_users = len([u for u in users.values() if u.get("role") == "user"])
+            st.metric(t('regular_users'), regular_users)
+        with col4:
+            admins = len([u for u in users.values() if u.get("role") == "admin"])
+            st.metric(t('admins'), admins)
+        
+        st.markdown("---")
+
+        st.subheader(t('all_users'))
+        user_data = []
+        for email, data in users.items():
+            user_data.append({
+                "Email": email,
+                "Role": data.get("role", "user"),
+                "Created": data.get("created_at", "Unknown"),
+                "Quotes Saved": len(data.get("saved_quotes", [])),
+                "Verified": "✅" if data.get("verified", False) else "❌"
+            })
+        st.dataframe(pd.DataFrame(user_data), use_container_width=True)
+        
+        st.markdown("---")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader(t('delete_user'))
+            user_to_delete = st.selectbox(t('select_user'), list(users.keys()))
+            if st.button("Delete Selected User", use_container_width=True):
+                if user_to_delete == st.session_state.current_user:
+                    st.error("You cannot delete yourself!")
+                else:
+                    del users[user_to_delete]
+                    save_users(users)
+                    st.success(f"User {user_to_delete} deleted successfully!")
+                    st.rerun()
+        
+        with col2:
+            st.subheader(t('make_admin'))
+            regular_users_list = [u for u in users.keys() if users[u].get("role") != "admin"]
+            if regular_users_list:
+                user_to_promote = st.selectbox(t('select_user_promote'), regular_users_list)
+                if st.button("Make Admin", use_container_width=True):
+                    users[user_to_promote]["role"] = "admin"
+                    save_users(users)
+                    st.success(f"{user_to_promote} is now an admin!")
+                    st.rerun()
+            else:
+                st.info("No regular users to promote")
+        
+        st.markdown("---")
+
+        st.subheader(t('all_quotes'))
+        all_quotes = []
+        for email, data in users.items():
+            for quote in data.get("saved_quotes", []):
+                all_quotes.append({
+                    "User": email,
+                    "Date": quote["date"],
+                    "Premium": f"${quote['predicted_premium']:,.2f}",
+                    "Health Score": quote.get("health_score", 0)
+                })
+        
+        if all_quotes:
+            st.dataframe(pd.DataFrame(all_quotes), use_container_width=True)
+            
+            if st.button(t('clear_all_quotes'), use_container_width=True):
+                for email in users:
+                    users[email]["saved_quotes"] = []
+                save_users(users)
+                st.success("All quotes cleared from all users!")
+                st.rerun()
+        else:
+            st.info("No quotes saved by any user yet")
+        
+        st.markdown("---")
+        st.caption("Admin actions are permanent and cannot be undone.")
