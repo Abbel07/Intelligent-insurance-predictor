@@ -7,4 +7,3 @@ requests
 fpdf
 scikit-learn
 xgboost
-supabase
