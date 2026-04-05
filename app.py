@@ -192,11 +192,17 @@ if img_base64:
             visibility: visible !important;
         }}
         
-        /* Input fields */
-        input, textarea, .stTextInput input, .stNumberInput input {{
-            background-color: rgba(255, 255, 255, 0.1) !important;
+        /* Input fields - DARK BACKGROUND FOR VISIBILITY */
+        input, textarea, .stTextInput input, .stNumberInput input, .stPasswordInput input {{
+            background-color: rgba(0, 0, 0, 0.7) !important;
             color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border: 1px solid #57B9FF !important;
+            border-radius: 8px !important;
+        }}
+        
+        /* Placeholder text */
+        .stTextInput input::placeholder, .stPasswordInput input::placeholder {{
+            color: rgba(255, 255, 255, 0.5) !important;
         }}
         
         /* Slider labels */
@@ -229,6 +235,11 @@ if img_base64:
         
         /* Fix for any remaining dark text */
         .stMarkdown, .stMarkdown p, .stText, div[data-testid="stMarkdownContainer"] p {{
+            color: white !important;
+        }}
+        
+        /* Fix for tabs on login page */
+        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {{
             color: white !important;
         }}
     </style>
