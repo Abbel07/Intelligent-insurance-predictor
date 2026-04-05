@@ -264,7 +264,6 @@ def is_authenticated_user(email):
 def can_make_predictions(email):
     return is_authenticated_user(email)
 
-# ==================== SESSION STATE INITIALIZATION ====================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
@@ -314,7 +313,6 @@ if "smoker" not in st.session_state:
 if "region" not in st.session_state:
     st.session_state.region = "southeast"
 
-# ==================== TRANSLATIONS (English & Swahili Only) ====================
 translations = {
     "English": {
         "welcome": "Welcome:",
@@ -829,7 +827,6 @@ else:
         t('tab_help')
     ])
 
-# ==================== TAB 1: PREDICTION ====================
 with tab1:
     user_email = st.session_state.current_user
     
@@ -874,8 +871,7 @@ with tab1:
         temp_input["gender"] = le_gender.transform(temp_input["gender"])
         temp_input["diabetic"] = le_diabetic.transform(temp_input["diabetic"])
         temp_input["smoker"] = le_smoker.transform(temp_input["smoker"])
-        
-        # Encode region using the encoder
+
         region_encoded_temp = le_region.transform([st.session_state.get("region", "southeast")])[0]
         temp_input["region"] = region_encoded_temp
         
@@ -914,7 +910,6 @@ with tab1:
                 st.session_state.region = region
         
         if submitted:
-            # Encode region using the encoder
             region_encoded = le_region.transform([region])[0]
             
             input_data = pd.DataFrame({
@@ -1004,7 +999,6 @@ with tab1:
             st.session_state.authenticated = False
             st.rerun()
 
-# ==================== TAB 2: ANALYTICS ====================
 with tab2:
     if st.session_state.prediction_made:
         pred = st.session_state.last_prediction
@@ -1017,8 +1011,7 @@ with tab2:
         smoker = data["smoker"]
         diabetic = data["diabetic"]
         region = data.get("region", "southeast")
-        
-        # Encode region for model
+
         region_encoded = le_region.transform([region])[0]
         
         rate = exchange_rates.get(st.session_state.selected_currency, 1.0)
@@ -1098,7 +1091,7 @@ with tab2:
         
         st.markdown("---")
         st.caption("""
-        **Reading the Premium Comparison chart:**
+        **Reading the Premium Comparison chart.**
         
         - **Blue bar (Your Premium)** : Your estimated annual premium based on your health profile
         - **Purple bar (National Avg)** : The average premium across all age groups in the US ($12,000)
@@ -1231,8 +1224,7 @@ with tab2:
         baseline_data["smoker"] = le_smoker.transform(baseline_data["smoker"])
         baseline_data[num_cols] = scaler.transform(baseline_data[num_cols])
         baseline_pred = model.predict(baseline_data)[0]
-        
-        # Age Impact
+
         age_data = pd.DataFrame({
             "age": [30],
             "gender": [data["gender"]],
@@ -1251,7 +1243,6 @@ with tab2:
         age_impact = ((baseline_pred - age_pred) / baseline_pred) * 100
         impacts.append(("Age", age_impact))
         
-        # BMI Impact
         bmi_data = pd.DataFrame({
             "age": [age],
             "gender": [data["gender"]],
@@ -1270,7 +1261,6 @@ with tab2:
         bmi_impact = ((baseline_pred - bmi_pred) / baseline_pred) * 100
         impacts.append(("BMI", bmi_impact))
         
-        # Blood Pressure Impact
         bp_data = pd.DataFrame({
             "age": [age],
             "gender": [data["gender"]],
@@ -1288,8 +1278,7 @@ with tab2:
         bp_pred = model.predict(bp_data)[0]
         bp_impact = ((baseline_pred - bp_pred) / baseline_pred) * 100
         impacts.append(("Blood Pressure", bp_impact))
-        
-        # Smoking Impact
+
         if smoker == smoker_positive:
             nonsmoker_data = pd.DataFrame({
                 "age": [age],
@@ -1325,8 +1314,7 @@ with tab2:
             smoker_pred = model.predict(smoker_data)[0]
             smoke_impact = ((baseline_pred - smoker_pred) / baseline_pred) * 100
         impacts.append(("Smoking", smoke_impact))
-        
-        # Diabetes Impact
+
         if diabetic == diabetic_positive:
             nondiabetic_data = pd.DataFrame({
                 "age": [age],
@@ -1472,7 +1460,6 @@ with tab2:
     else:
         st.info(t('prediction_first'))
 
-# ==================== TAB 3: HELP ====================
 with tab3:
     st.subheader(t('faq'))
     
@@ -1508,15 +1495,11 @@ with tab3:
     
     with st.expander(t('q6')):
         st.write(t('a6'))
-    
-    st.divider()
-    st.caption(t('disclaimer'))
 
-# ==================== TAB 4: ADMIN ====================
 if is_admin(st.session_state.current_user):
     with tab4:
         st.subheader("Admin Dashboard")
-        st.success("Welcome, Administrator! You have full system access.")
+        st.success("Welcome Administrator")
         
         users = load_users()
         total_users = len(users)
@@ -1572,6 +1555,3 @@ if is_admin(st.session_state.current_user):
                     st.rerun()
             else:
                 st.info("No regular users to promote")
-        
-        st.markdown("---")
-        st.caption("Admin actions are permanent and cannot be undone.")
