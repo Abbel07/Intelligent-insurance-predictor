@@ -22,14 +22,31 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ==================== GLOBAL CSS WITH GRADIENT BACKGROUND ====================
 st.markdown("""
 <style>
+    /* Main app background gradient */
+    .stApp {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    
+    /* Main content area - semi-transparent white for readability */
+    .main > div {
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Sidebar background - Navy Blue */
     [data-testid="stSidebar"] {
         background-color: #001f3f !important;
         min-width: 300px !important;
         width: 300px !important;
     }
     
+    /* Sidebar content - White text */
     [data-testid="stSidebar"] [data-testid="stMarkdown"],
     [data-testid="stSidebar"] [data-testid="stMarkdown"] p,
     [data-testid="stSidebar"] .stMarkdown,
@@ -42,6 +59,7 @@ st.markdown("""
         color: white !important;
     }
     
+    /* Sidebar headers */
     [data-testid="stSidebar"] h1,
     [data-testid="stSidebar"] h2,
     [data-testid="stSidebar"] h3,
@@ -50,57 +68,98 @@ st.markdown("""
         color: white !important;
     }
     
+    /* Sidebar bold text - Sky Blue accent */
     [data-testid="stSidebar"] strong,
     [data-testid="stSidebar"] b {
         color: #57B9FF !important;
     }
     
+    /* Sidebar selectbox */
     [data-testid="stSidebar"] .stSelectbox select {
         background-color: #002b4f;
         color: white;
         border: 1px solid #4a6b8f;
     }
     
+    /* Sidebar selectbox options */
     [data-testid="stSidebar"] .stSelectbox option {
         background-color: #002b4f;
         color: white;
     }
     
+    /* Sidebar divider */
     [data-testid="stSidebar"] hr {
         border-color: #4a6b8f;
     }
     
+    /* Sidebar expander header */
     [data-testid="stSidebar"] .streamlit-expanderHeader {
         color: white !important;
         background-color: #002b4f;
     }
     
+    /* Sidebar button */
     [data-testid="stSidebar"] .stButton button {
         background-color: #57B9FF;
         color: #001f3f;
         font-weight: bold;
     }
     
+    /* Sidebar button hover */
     [data-testid="stSidebar"] .stButton button:hover {
         background-color: #3a9ae0;
         color: white;
     }
     
+    /* Main content margin */
     .main {
         margin-left: 300px !important;
     }
     
+    /* Hide Streamlit default elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display: none;}
     [data-testid="stToolbar"] {display: none;}
     
+    /* Sidebar navigation */
     [data-testid="stSidebarNav"] {
         background-color: #001f3f;
     }
     
+    /* Ensure sidebar visibility */
     [data-testid="stSidebar"] * {
         visibility: visible !important;
+    }
+    
+    /* Headers and text colors in main content */
+    h1, h2, h3, h4, p, .stMarkdown, label {
+        color: #001f3f !important;
+    }
+    
+    /* Metric styling */
+    [data-testid="stMetric"] {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        padding: 10px;
+    }
+    
+    /* Button styling in main content */
+    .stButton button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white !important;
+        border: none;
+    }
+    
+    .stButton button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+    }
+    
+    /* Info/Success/Warning/Error message styling */
+    .stAlert {
+        border-radius: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -264,6 +323,7 @@ def is_authenticated_user(email):
 def can_make_predictions(email):
     return is_authenticated_user(email)
 
+# ==================== SESSION STATE INITIALIZATION ====================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
@@ -313,6 +373,7 @@ if "smoker" not in st.session_state:
 if "region" not in st.session_state:
     st.session_state.region = "southeast"
 
+# ==================== TRANSLATIONS ====================
 translations = {
     "English": {
         "welcome": "Welcome:",
@@ -536,11 +597,9 @@ def t(key, **kwargs):
     return text
 
 def show_auth_ui():
+    # Minimal CSS for login page (gradient is already applied globally)
     st.markdown("""
     <style>
-    .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -778,7 +837,7 @@ with st.sidebar:
     if st.session_state.current_user != "Guest":
         st.write(f"{t('welcome')} {st.session_state.current_user}")
         if is_admin(st.session_state.current_user):
-            st.markdown("Admin Mode")
+            st.markdown("🔑 **Admin Mode**")
     else:
         st.write(f"{t('welcome')} Guest")
     
@@ -827,6 +886,7 @@ else:
         t('tab_help')
     ])
 
+# ==================== TAB 1: PREDICTION ====================
 with tab1:
     user_email = st.session_state.current_user
     
@@ -871,7 +931,7 @@ with tab1:
         temp_input["gender"] = le_gender.transform(temp_input["gender"])
         temp_input["diabetic"] = le_diabetic.transform(temp_input["diabetic"])
         temp_input["smoker"] = le_smoker.transform(temp_input["smoker"])
-
+        
         region_encoded_temp = le_region.transform([st.session_state.get("region", "southeast")])[0]
         temp_input["region"] = region_encoded_temp
         
@@ -999,6 +1059,7 @@ with tab1:
             st.session_state.authenticated = False
             st.rerun()
 
+# ==================== TAB 2: ANALYTICS ====================
 with tab2:
     if st.session_state.prediction_made:
         pred = st.session_state.last_prediction
@@ -1460,6 +1521,7 @@ with tab2:
     else:
         st.info(t('prediction_first'))
 
+# ==================== TAB 3: HELP ====================
 with tab3:
     st.subheader(t('faq'))
     
@@ -1496,6 +1558,7 @@ with tab3:
     with st.expander(t('q6')):
         st.write(t('a6'))
 
+# ==================== TAB 4: ADMIN ====================
 if is_admin(st.session_state.current_user):
     with tab4:
         st.subheader("Admin Dashboard")
