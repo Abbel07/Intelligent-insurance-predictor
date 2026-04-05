@@ -1095,9 +1095,20 @@ with tab1:
             fig = go.Figure(go.Indicator(
                 mode="gauge+number",
                 value=health_score,
-                title={"text": t('health_score')},
+                title={"text": t('health_score'), "font": {"size": 24, "color": "white"}},
                 domain={"x": [0, 1], "y": [0, 1]},
-                gauge={"axis": {"range": [0, 100]}, "bar": {"color": "darkgreen"}}
+                gauge={
+                    "axis": {"range": [0, 100], "tickcolor": "white", "tickwidth": 2},
+                    "bar": {"color": "#57B9FF"},
+                    "bgcolor": "rgba(0,0,0,0.3)",
+                    "borderwidth": 2,
+                    "bordercolor": "#57B9FF",
+                    "steps": [
+                        {"range": [0, 50], "color": "rgba(255, 80, 80, 0.4)"},
+                        {"range": [50, 75], "color": "rgba(255, 200, 80, 0.4)"},
+                        {"range": [75, 100], "color": "rgba(80, 255, 80, 0.4)"}
+                    ]
+                }
             ))
             st.plotly_chart(fig, use_container_width=True)
             
