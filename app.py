@@ -64,30 +64,51 @@ if img_base64:
         .main > div {{
             position: relative;
             z-index: 1;
-            background-color: rgba(0, 0, 0, 0.6) !important;  /* Dark background for content */
+            background-color: rgba(0, 0, 0, 0.6) !important;
             border-radius: 15px;
             padding: 20px;
             margin: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }}
         
-        /* CHANGE TEXT COLORS TO WHITE */
+        /* All text white */
         h1, h2, h3, h4, p, .stMarkdown, label, .stTextInput label, .stNumberInput label, .stSelectbox label {{
             color: white !important;
         }}
         
-        /* Make metric text white */
+        /* Slider values (the numbers) */
+        .stSlider .stSlider label {{
+            color: white !important;
+        }}
+        
+        /* Make slider number values white */
+        .stSlider .stMarkdown {{
+            color: white !important;
+        }}
+        
+        /* Number input values */
+        .stNumberInput input {{
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }}
+        
+        /* Slider track and thumb */
+        .stSlider .stSlider .stThumb {{
+            background-color: #57B9FF !important;
+        }}
+        
+        /* Metric text */
         [data-testid="stMetric"] label, [data-testid="stMetric"] .stMarkdown {{
             color: white !important;
         }}
         
-        /* Make info/success/warning text readable on dark background */
+        /* Info/Success/Warning text */
         .stAlert {{
             background-color: rgba(0, 0, 0, 0.8) !important;
             color: white !important;
         }}
         
-        /* Sidebar background - Navy Blue */
+        /* Sidebar styling */
         [data-testid="stSidebar"] {{
             position: relative;
             z-index: 2;
@@ -96,7 +117,6 @@ if img_base64:
             width: 300px !important;
         }}
         
-        /* Sidebar content - White text */
         [data-testid="stSidebar"] [data-testid="stMarkdown"],
         [data-testid="stSidebar"] [data-testid="stMarkdown"] p,
         [data-testid="stSidebar"] .stMarkdown,
@@ -109,7 +129,6 @@ if img_base64:
             color: white !important;
         }}
         
-        /* Sidebar headers */
         [data-testid="stSidebar"] h1,
         [data-testid="stSidebar"] h2,
         [data-testid="stSidebar"] h3,
@@ -118,44 +137,37 @@ if img_base64:
             color: white !important;
         }}
         
-        /* Sidebar bold text - Sky Blue accent */
         [data-testid="stSidebar"] strong,
         [data-testid="stSidebar"] b {{
             color: #57B9FF !important;
         }}
         
-        /* Sidebar selectbox */
         [data-testid="stSidebar"] .stSelectbox select {{
             background-color: #002b4f;
             color: white;
             border: 1px solid #4a6b8f;
         }}
         
-        /* Sidebar selectbox options */
         [data-testid="stSidebar"] .stSelectbox option {{
             background-color: #002b4f;
             color: white;
         }}
         
-        /* Sidebar divider */
         [data-testid="stSidebar"] hr {{
             border-color: #4a6b8f;
         }}
         
-        /* Sidebar expander header */
         [data-testid="stSidebar"] .streamlit-expanderHeader {{
             color: white !important;
             background-color: #002b4f;
         }}
         
-        /* Sidebar button */
         [data-testid="stSidebar"] .stButton button {{
             background-color: #57B9FF;
             color: #001f3f;
             font-weight: bold;
         }}
         
-        /* Sidebar button hover */
         [data-testid="stSidebar"] .stButton button:hover {{
             background-color: #3a9ae0;
             color: white;
@@ -172,34 +184,32 @@ if img_base64:
         .stDeployButton {{display: none;}}
         [data-testid="stToolbar"] {{display: none;}}
         
-        /* Sidebar navigation */
         [data-testid="stSidebarNav"] {{
             background-color: #001f3f;
         }}
         
-        /* Ensure sidebar visibility */
         [data-testid="stSidebar"] * {{
             visibility: visible !important;
         }}
         
-        /* Input fields styling - light text on dark */
+        /* Input fields */
         input, textarea, .stTextInput input, .stNumberInput input {{
             background-color: rgba(255, 255, 255, 0.1) !important;
             color: white !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
         }}
         
-        /* Slider styling */
+        /* Slider labels */
         .stSlider .stSlider label {{
             color: white !important;
         }}
         
-        /* Toggle styling */
+        /* Toggle */
         .stToggle label {{
             color: white !important;
         }}
         
-        /* Button styling in main content */
+        /* Buttons */
         .stButton button {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white !important;
@@ -210,6 +220,16 @@ if img_base64:
             opacity: 0.9;
             transform: translateY(-1px);
             transition: all 0.2s ease;
+        }}
+        
+        /* Fix for slider number values */
+        .stSlider .stSlider .stMarkdown {{
+            color: white !important;
+        }}
+        
+        /* Fix for any remaining dark text */
+        .stMarkdown, .stMarkdown p, .stText, div[data-testid="stMarkdownContainer"] p {{
+            color: white !important;
         }}
     </style>
     """, unsafe_allow_html=True)
