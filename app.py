@@ -22,147 +22,197 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ==================== GLOBAL CSS WITH GRADIENT BACKGROUND ====================
-st.markdown("""
-<style>
-    /* Main app background gradient */
-    .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    }
-    
-    /* Main content area - semi-transparent white for readability */
-    .main > div {
-        background-color: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 15px;
-        padding: 20px;
-        margin: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* Sidebar background - Navy Blue */
-    [data-testid="stSidebar"] {
-        background-color: #001f3f !important;
-        min-width: 300px !important;
-        width: 300px !important;
-    }
-    
-    /* Sidebar content - White text */
-    [data-testid="stSidebar"] [data-testid="stMarkdown"],
-    [data-testid="stSidebar"] [data-testid="stMarkdown"] p,
-    [data-testid="stSidebar"] .stMarkdown,
-    [data-testid="stSidebar"] .stSelectbox label,
-    [data-testid="stSidebar"] .stExpander,
-    [data-testid="stSidebar"] p,
-    [data-testid="stSidebar"] li,
-    [data-testid="stSidebar"] span,
-    [data-testid="stSidebar"] div {
-        color: white !important;
-    }
-    
-    /* Sidebar headers */
-    [data-testid="stSidebar"] h1,
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] h4,
-    [data-testid="stSidebar"] .stHeading {
-        color: white !important;
-    }
-    
-    /* Sidebar bold text - Sky Blue accent */
-    [data-testid="stSidebar"] strong,
-    [data-testid="stSidebar"] b {
-        color: #57B9FF !important;
-    }
-    
-    /* Sidebar selectbox */
-    [data-testid="stSidebar"] .stSelectbox select {
-        background-color: #002b4f;
-        color: white;
-        border: 1px solid #4a6b8f;
-    }
-    
-    /* Sidebar selectbox options */
-    [data-testid="stSidebar"] .stSelectbox option {
-        background-color: #002b4f;
-        color: white;
-    }
-    
-    /* Sidebar divider */
-    [data-testid="stSidebar"] hr {
-        border-color: #4a6b8f;
-    }
-    
-    /* Sidebar expander header */
-    [data-testid="stSidebar"] .streamlit-expanderHeader {
-        color: white !important;
-        background-color: #002b4f;
-    }
-    
-    /* Sidebar button */
-    [data-testid="stSidebar"] .stButton button {
-        background-color: #57B9FF;
-        color: #001f3f;
-        font-weight: bold;
-    }
-    
-    /* Sidebar button hover */
-    [data-testid="stSidebar"] .stButton button:hover {
-        background-color: #3a9ae0;
-        color: white;
-    }
-    
-    /* Main content margin */
-    .main {
-        margin-left: 300px !important;
-    }
-    
-    /* Hide Streamlit default elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display: none;}
-    [data-testid="stToolbar"] {display: none;}
-    
-    /* Sidebar navigation */
-    [data-testid="stSidebarNav"] {
-        background-color: #001f3f;
-    }
-    
-    /* Ensure sidebar visibility */
-    [data-testid="stSidebar"] * {
-        visibility: visible !important;
-    }
-    
-    /* Headers and text colors in main content */
-    h1, h2, h3, h4, p, .stMarkdown, label {
-        color: #001f3f !important;
-    }
-    
-    /* Metric styling */
-    [data-testid="stMetric"] {
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: 10px;
-        padding: 10px;
-    }
-    
-    /* Button styling in main content */
-    .stButton button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white !important;
-        border: none;
-    }
-    
-    .stButton button:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-        transition: all 0.2s ease;
-    }
-    
-    /* Info/Success/Warning/Error message styling */
-    .stAlert {
-        border-radius: 10px;
-    }
-</style>
-""", unsafe_allow_html=True)
+import base64
+
+# Function to load image
+def get_base64_image(image_path):
+    try:
+        with open(image_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        print(f"Image not found: {image_path}")
+        return None
+
+# Load background image
+img_base64 = get_base64_image("background.jpg")
+if img_base64:
+    st.markdown(f"""
+    <style>
+        /* Main app background image */
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{img_base64}");
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+        
+        /* No white overlay */
+        .stApp::before {{
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0);
+            z-index: 0;
+        }}
+        
+        /* Make main content appear above overlay */
+        .main > div {{
+            position: relative;
+            z-index: 1;
+            background-color: rgba(0, 0, 0, 0.6) !important;  /* Dark background for content */
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }}
+        
+        /* CHANGE TEXT COLORS TO WHITE */
+        h1, h2, h3, h4, p, .stMarkdown, label, .stTextInput label, .stNumberInput label, .stSelectbox label {{
+            color: white !important;
+        }}
+        
+        /* Make metric text white */
+        [data-testid="stMetric"] label, [data-testid="stMetric"] .stMarkdown {{
+            color: white !important;
+        }}
+        
+        /* Make info/success/warning text readable on dark background */
+        .stAlert {{
+            background-color: rgba(0, 0, 0, 0.8) !important;
+            color: white !important;
+        }}
+        
+        /* Sidebar background - Navy Blue */
+        [data-testid="stSidebar"] {{
+            position: relative;
+            z-index: 2;
+            background-color: #001f3f !important;
+            min-width: 300px !important;
+            width: 300px !important;
+        }}
+        
+        /* Sidebar content - White text */
+        [data-testid="stSidebar"] [data-testid="stMarkdown"],
+        [data-testid="stSidebar"] [data-testid="stMarkdown"] p,
+        [data-testid="stSidebar"] .stMarkdown,
+        [data-testid="stSidebar"] .stSelectbox label,
+        [data-testid="stSidebar"] .stExpander,
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] li,
+        [data-testid="stSidebar"] span,
+        [data-testid="stSidebar"] div {{
+            color: white !important;
+        }}
+        
+        /* Sidebar headers */
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3,
+        [data-testid="stSidebar"] h4,
+        [data-testid="stSidebar"] .stHeading {{
+            color: white !important;
+        }}
+        
+        /* Sidebar bold text - Sky Blue accent */
+        [data-testid="stSidebar"] strong,
+        [data-testid="stSidebar"] b {{
+            color: #57B9FF !important;
+        }}
+        
+        /* Sidebar selectbox */
+        [data-testid="stSidebar"] .stSelectbox select {{
+            background-color: #002b4f;
+            color: white;
+            border: 1px solid #4a6b8f;
+        }}
+        
+        /* Sidebar selectbox options */
+        [data-testid="stSidebar"] .stSelectbox option {{
+            background-color: #002b4f;
+            color: white;
+        }}
+        
+        /* Sidebar divider */
+        [data-testid="stSidebar"] hr {{
+            border-color: #4a6b8f;
+        }}
+        
+        /* Sidebar expander header */
+        [data-testid="stSidebar"] .streamlit-expanderHeader {{
+            color: white !important;
+            background-color: #002b4f;
+        }}
+        
+        /* Sidebar button */
+        [data-testid="stSidebar"] .stButton button {{
+            background-color: #57B9FF;
+            color: #001f3f;
+            font-weight: bold;
+        }}
+        
+        /* Sidebar button hover */
+        [data-testid="stSidebar"] .stButton button:hover {{
+            background-color: #3a9ae0;
+            color: white;
+        }}
+        
+        /* Main content margin */
+        .main {{
+            margin-left: 300px !important;
+        }}
+        
+        /* Hide Streamlit default elements */
+        #MainMenu {{visibility: hidden;}}
+        footer {{visibility: hidden;}}
+        .stDeployButton {{display: none;}}
+        [data-testid="stToolbar"] {{display: none;}}
+        
+        /* Sidebar navigation */
+        [data-testid="stSidebarNav"] {{
+            background-color: #001f3f;
+        }}
+        
+        /* Ensure sidebar visibility */
+        [data-testid="stSidebar"] * {{
+            visibility: visible !important;
+        }}
+        
+        /* Input fields styling - light text on dark */
+        input, textarea, .stTextInput input, .stNumberInput input {{
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        }}
+        
+        /* Slider styling */
+        .stSlider .stSlider label {{
+            color: white !important;
+        }}
+        
+        /* Toggle styling */
+        .stToggle label {{
+            color: white !important;
+        }}
+        
+        /* Button styling in main content */
+        .stButton button {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border: none;
+        }}
+        
+        .stButton button:hover {{
+            opacity: 0.9;
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 USER_DATA_FILE = "users.json"
 
@@ -837,7 +887,7 @@ with st.sidebar:
     if st.session_state.current_user != "Guest":
         st.write(f"{t('welcome')} {st.session_state.current_user}")
         if is_admin(st.session_state.current_user):
-            st.markdown("🔑 **Admin Mode**")
+            st.markdown(" **Admin**")
     else:
         st.write(f"{t('welcome')} Guest")
     
