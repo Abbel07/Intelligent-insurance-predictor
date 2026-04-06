@@ -1245,11 +1245,6 @@ with tab2:
         - If you pay more than your age group average → Specific factors (smoking, BMI, etc.) are increasing your premium
         - The age group average is the most fair comparison since age is a major factor in insurance pricing
         
-        **Example interpretation:**
-        - A 35-year-old non-smoker with healthy BMI might pay $6,000 vs age group average of $8,000
-        - This means they are saving $2,000 (25%) compared to others their age
-        """)
-        
         st.markdown("---")
         st.subheader(t('premium_projection'))
         
