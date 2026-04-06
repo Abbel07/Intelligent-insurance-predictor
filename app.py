@@ -22,8 +22,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-import base64
-
 # Function to load image
 def get_base64_image(image_path):
     try:
@@ -393,6 +391,7 @@ def is_authenticated_user(email):
 def can_make_predictions(email):
     return is_authenticated_user(email)
 
+# Session State Initialization
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
@@ -442,6 +441,7 @@ if "smoker" not in st.session_state:
 if "region" not in st.session_state:
     st.session_state.region = "southeast"
 
+# Translations
 translations = {
     "English": {
         "welcome": "Welcome:",
@@ -952,6 +952,7 @@ else:
         t('tab_help')
     ])
 
+# ==================== TAB 1: PREDICTION ====================
 with tab1:
     user_email = st.session_state.current_user
     
@@ -1134,7 +1135,8 @@ with tab1:
         if st.button("Sign In / Create Account", use_container_width=True):
             st.session_state.authenticated = False
             st.rerun()
-            
+
+# ==================== TAB 2: ANALYTICS ====================
 with tab2:
     if st.session_state.prediction_made:
         pred = st.session_state.last_prediction
@@ -1244,6 +1246,7 @@ with tab2:
         - If you pay less than your age group average → You have good health habits
         - If you pay more than your age group average → Specific factors (smoking, BMI, etc.) are increasing your premium
         - The age group average is the most fair comparison since age is a major factor in insurance pricing
+        """)
         
         st.markdown("---")
         st.subheader(t('premium_projection'))
@@ -1482,22 +1485,22 @@ with tab2:
             diabetic_impact = ((baseline_pred - diabetic_pred) / baseline_pred) * 100
         impacts.append(("Diabetes", diabetic_impact))
         
-impact_df = pd.DataFrame(impacts, columns=["Factor", "Impact (%)"])
-
-fig = px.bar(impact_df, x="Factor", y="Impact (%)",
-    title=t('impact_analysis'),
-    labels={"Factor": "Factor", "Impact (%)": "Impact (%)"},
-    color="Impact (%)",
-    color_continuous_scale=["red", "yellow", "green"])
-fig.add_hline(y=0, line_dash="dash", line_color="black")
-st.plotly_chart(fig, use_container_width=True)
-
-st.caption("""
-**How to read this chart:**
-- **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
-- **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
-- **Example:** A -15% for Smoking means being a smoker increases your premium by 15% 
-""")
+        impact_df = pd.DataFrame(impacts, columns=["Factor", "Impact (%)"])
+        
+        fig = px.bar(impact_df, x="Factor", y="Impact (%)",
+                     title=t('impact_analysis'),
+                     labels={"Factor": "Factor", "Impact (%)": "Impact (%)"},
+                     color="Impact (%)",
+                     color_continuous_scale=["red", "yellow", "green"])
+        fig.add_hline(y=0, line_dash="dash", line_color="black")
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.caption("""
+        **How to read this chart:**
+        - **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
+        - **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
+        - **Example:** A -15% for Smoking means being a smoker increases your premium by 15%
+        """)
         
         st.markdown("---")
         st.subheader(t('download_report'))
@@ -1591,6 +1594,7 @@ st.caption("""
     else:
         st.info(t('prediction_first'))
 
+# ==================== TAB 3: HELP ====================
 with tab3:
     st.subheader(t('faq'))
     
@@ -1627,6 +1631,7 @@ with tab3:
     with st.expander(t('q6')):
         st.write(t('a6'))
 
+# ==================== TAB 4: ADMIN ====================
 if is_admin(st.session_state.current_user):
     with tab4:
         st.subheader("Admin Dashboard")
