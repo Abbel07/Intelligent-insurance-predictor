@@ -36,6 +36,7 @@ def get_base64_image(image_path):
 
 # Load background image
 img_base64 = get_base64_image("background.jpg")
+
 if img_base64:
     st.markdown(f"""
     <style>
@@ -60,14 +61,17 @@ if img_base64:
             z-index: 0;
         }}
         
-        /* Make main content appear above overlay */
-        .main > div {{
-            position: relative;
-            z-index: 1;
-            background-color: rgba(0, 0, 0, 0.6) !important;
+        /* Target the main content area correctly */
+        .stApp > .main {{
+            background-color: transparent !important;
+        }}
+        
+        /* Target the block container */
+        .main .block-container {{
+            background-color: rgba(0, 0, 0, 0.65) !important;
             border-radius: 15px;
-            padding: 20px;
-            margin: 10px;
+            padding: 2rem 1rem !important;
+            margin: 1rem auto !important;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }}
         
@@ -76,12 +80,7 @@ if img_base64:
             color: white !important;
         }}
         
-        /* Slider values (the numbers) */
-        .stSlider .stSlider label {{
-            color: white !important;
-        }}
-        
-        /* Make slider number values white */
+        /* Slider values */
         .stSlider .stMarkdown {{
             color: white !important;
         }}
@@ -92,7 +91,7 @@ if img_base64:
             background-color: rgba(255, 255, 255, 0.1) !important;
         }}
         
-        /* Slider track and thumb */
+        /* Slider thumb */
         .stSlider .stSlider .stThumb {{
             background-color: #57B9FF !important;
         }}
@@ -192,7 +191,7 @@ if img_base64:
             visibility: visible !important;
         }}
         
-        /* Input fields - DARK BACKGROUND FOR VISIBILITY */
+        /* Input fields */
         input, textarea, .stTextInput input, .stNumberInput input, .stPasswordInput input {{
             background-color: rgba(0, 0, 0, 0.7) !important;
             color: white !important;
@@ -203,11 +202,6 @@ if img_base64:
         /* Placeholder text */
         .stTextInput input::placeholder, .stPasswordInput input::placeholder {{
             color: rgba(255, 255, 255, 0.5) !important;
-        }}
-        
-        /* Slider labels */
-        .stSlider .stSlider label {{
-            color: white !important;
         }}
         
         /* Toggle */
@@ -228,18 +222,13 @@ if img_base64:
             transition: all 0.2s ease;
         }}
         
-        /* Fix for slider number values */
-        .stSlider .stSlider .stMarkdown {{
+        /* Tabs styling */
+        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {{
             color: white !important;
         }}
         
         /* Fix for any remaining dark text */
         .stMarkdown, .stMarkdown p, .stText, div[data-testid="stMarkdownContainer"] p {{
-            color: white !important;
-        }}
-        
-        /* Fix for tabs on login page */
-        .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {{
             color: white !important;
         }}
     </style>
