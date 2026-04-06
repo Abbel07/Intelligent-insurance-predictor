@@ -1482,23 +1482,22 @@ with tab2:
             diabetic_impact = ((baseline_pred - diabetic_pred) / baseline_pred) * 100
         impacts.append(("Diabetes", diabetic_impact))
         
-        impact_df = pd.DataFrame(impacts, columns=["Factor", "Impact (%)"])
-        
-        fig = px.bar(impact_df, x="Factor", y="Impact (%)", 
-                     title=t('impact_analysis'),
-                     labels={"Factor": "Factor", "Impact (%)": "Impact (%)"},
-                     color="Impact (%)",
-                     color_continuous_scale=["red", "yellow", "green"])
-        fig.add_hline(y=0, line_dash="dash", line_color="black")
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.caption("""
-        **How to read this chart:**
-        - **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
-        - **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
-        - **Example:** A -15% for Smoking means being a smoker increases your premium by 15%
-        
-        """)
+impact_df = pd.DataFrame(impacts, columns=["Factor", "Impact (%)"])
+
+fig = px.bar(impact_df, x="Factor", y="Impact (%)",
+    title=t('impact_analysis'),
+    labels={"Factor": "Factor", "Impact (%)": "Impact (%)"},
+    color="Impact (%)",
+    color_continuous_scale=["red", "yellow", "green"])
+fig.add_hline(y=0, line_dash="dash", line_color="black")
+st.plotly_chart(fig, use_container_width=True)
+
+st.caption("""
+**How to read this chart:**
+- **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
+- **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
+- **Example:** A -15% for Smoking means being a smoker increases your premium by 15%
+""")
         
         st.markdown("---")
         st.subheader(t('download_report'))
