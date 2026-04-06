@@ -1457,7 +1457,7 @@ with tab2:
                 "smoker": [smoker],
                 "region": [region_encoded]
             })
-            nondiabetic_data["gender"] = le_gender.transform(nondiabetic_data["gender"])
+            nondiabetic_data["gender"] = le_gender.transform(nondiabetic_data["gender"])8
             nondiabetic_data["diabetic"] = le_diabetic.transform(nondiabetic_data["diabetic"])
             nondiabetic_data["smoker"] = le_smoker.transform(nondiabetic_data["smoker"])
             nondiabetic_data[num_cols] = scaler.transform(nondiabetic_data[num_cols])
