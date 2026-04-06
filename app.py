@@ -393,7 +393,6 @@ def is_authenticated_user(email):
 def can_make_predictions(email):
     return is_authenticated_user(email)
 
-# ==================== SESSION STATE INITIALIZATION ====================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "current_user" not in st.session_state:
@@ -443,19 +442,18 @@ if "smoker" not in st.session_state:
 if "region" not in st.session_state:
     st.session_state.region = "southeast"
 
-# ==================== TRANSLATIONS ====================
 translations = {
     "English": {
         "welcome": "Welcome:",
         "logout": "Logout",
         "about_app": "About This App",
         "model": "Model: Best Model",
-        "features": "Features: Age, BMI, Blood Pressure, Children, Gender, Diabetic, Smoker, Region",
+        "features": "Features: Age, Body Mass Index (BMI), Blood Pressure (BP), Children, Gender, Diabetic, Smoker, Region",
         "understanding": "Understanding Your Quote",
         "tip1": "- Non-smokers pay 20-30% less",
-        "tip2": "- Lower BMI = lower premiums",
+        "tip2": "- Lower Body Mass Index (BMI) = lower premiums",
         "tip3": "- No diabetes reduces costs by 15-25%",
-        "tip4": "- Normal BP helps lower rates",
+        "tip4": "- Normal Blood Pressure (BP) helps lower rates",
         "tip5": "- Older age = higher premiums",
         "title": "Health Insurance Prediction",
         "subtitle": "Enter your details to get an insurance estimate",
@@ -481,7 +479,7 @@ translations = {
         "health_tips": "Health Tips",
         "tip_quit_smoking": "Quit smoking to save up to 30%",
         "tip_lose_weight": "Lose weight to save 15-20%",
-        "tip_lower_bp": "Lower BP to save up to 10%",
+        "tip_lower_bp": "Lower Blood Pressure (BP) to save up to 10%",
         "tip_manage_diabetes": "Manage diabetes to save 15-25%",
         "tip_great_job": "Great job! You're maintaining healthy habits!",
         "click_predict": "Click Predict Payment to see your estimate",
@@ -529,7 +527,6 @@ translations = {
         "score5": "Higher scores indicate better health and potentially lower premiums.",
         "q6": "Is this app free to use?",
         "a6": "Yes! This is a free educational tool. For actual quotes, please consult licensed insurance professionals.",
-        "disclaimer": "Disclaimer: This prediction is for educational purposes only. Actual insurance premiums depend on multiple factors including medical history, location, and provider policies.",
         "sign_in": "Sign In",
         "create_account": "Create Account",
         "email": "Email",
@@ -632,7 +629,6 @@ translations = {
         "faq": "Maswali Yanayoulizwa Sana",
         "q1": "Utabiri huu ni sahihi kiasi gani?",
         "a1": "Utabiri huu unategemea modeli za kujifunza kwa mashine zilizofunzwa kwa data halisi ya bima. Nukuu halisi zinaweza kutofautiana kwa 10-20% kulingana na mtoa huduma na eneo.",
-        "disclaimer": "Kanusho: Utabiri huu ni kwa madhumuni ya kielimu tu. Malipo halisi ya bima yanategemea mambo mengi ikiwemo historia ya matibabu, eneo, na sera za mtoa huduma.",
         "sign_in": "Ingia",
         "create_account": "Tengeneza Akaunti",
         "email": "Barua pepe",
@@ -895,12 +891,12 @@ def get_exchange_rates():
     return {"USD": 1.0, "EUR": 0.92, "GBP": 0.79, "JPY": 148.5, "KES": 130.0, "TZS": 2500.0}
 
 currency_options = {
-    "USD": "🇺🇸 USD",
-    "EUR": "🇪🇺 EUR",
-    "GBP": "🇬🇧 GBP",
-    "JPY": "🇯🇵 JPY",
-    "KES": "🇰🇪 KES",
-    "TZS": "🇹🇿 TZS"
+    "USD": "USD",
+    "EUR": "EUR",
+    "GBP": "GBP",
+    "JPY": "JPY",
+    "KES": "KES",
+    "TZS": "TZS"
 }
 
 with st.sidebar:
@@ -956,7 +952,6 @@ else:
         t('tab_help')
     ])
 
-# ==================== TAB 1: PREDICTION ====================
 with tab1:
     user_email = st.session_state.current_user
     
@@ -1139,8 +1134,7 @@ with tab1:
         if st.button("Sign In / Create Account", use_container_width=True):
             st.session_state.authenticated = False
             st.rerun()
-
-# ==================== TAB 2: ANALYTICS ====================
+            
 with tab2:
     if st.session_state.prediction_made:
         pred = st.session_state.last_prediction
@@ -1602,7 +1596,6 @@ with tab2:
     else:
         st.info(t('prediction_first'))
 
-# ==================== TAB 3: HELP ====================
 with tab3:
     st.subheader(t('faq'))
     
@@ -1639,7 +1632,6 @@ with tab3:
     with st.expander(t('q6')):
         st.write(t('a6'))
 
-# ==================== TAB 4: ADMIN ====================
 if is_admin(st.session_state.current_user):
     with tab4:
         st.subheader("Admin Dashboard")
