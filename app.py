@@ -1457,7 +1457,7 @@ with tab2:
                 "smoker": [smoker],
                 "region": [region_encoded]
             })
-            nondiabetic_data["gender"] = le_gender.transform(nondiabetic_data["gender"])8
+            nondiabetic_data["gender"] = le_gender.transform(nondiabetic_data["gender"])
             nondiabetic_data["diabetic"] = le_diabetic.transform(nondiabetic_data["diabetic"])
             nondiabetic_data["smoker"] = le_smoker.transform(nondiabetic_data["smoker"])
             nondiabetic_data[num_cols] = scaler.transform(nondiabetic_data[num_cols])
@@ -1496,8 +1496,7 @@ st.caption("""
 **How to read this chart:**
 - **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
 - **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
-- **Example:** A -15% for Smoking means being a smoker increases your premium by 15%
-""")
+- **Example:** A -15% for Smoking means being a smoker increases your premium by 15% """)
         
         st.markdown("---")
         st.subheader(t('download_report'))
