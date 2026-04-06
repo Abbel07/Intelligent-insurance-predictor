@@ -1496,7 +1496,14 @@ st.caption("""
 **How to read this chart:**
 - **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
 - **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
-- **Example:** A -15% for Smoking means being a smoker increases your premium by 15% """)
+- **Example:** A -15% for Smoking means being a smoker increases your premium by 15% 
+
+Example interpretation:
+
+    A 35-year-old non-smoker with healthy BMI might pay 6,000 vs age group average of 8,000
+    This means they are saving $2,000 (25%) compared to others their age
+
+""")
         
         st.markdown("---")
         st.subheader(t('download_report'))
