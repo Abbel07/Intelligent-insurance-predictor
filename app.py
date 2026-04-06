@@ -1206,7 +1206,7 @@ with tab2:
             else:
                 st.metric("vs National Average", f"{st.session_state.selected_currency} {national_diff * rate:,.0f}", delta="Below Average", delta_color="normal")
             with st.expander(" What does this mean?"):
-                st.write(f"The US national average premium is {st.session_state.selected_currency} {12000 * rate:,.0f}. You pay {st.session_state.selected_currency} {abs(national_diff * rate):,.0f} {'more' if national_diff > 0 else 'less'}.")
+                st.write(f"The national average premium is {st.session_state.selected_currency} {12000 * rate:,.0f}. You pay {st.session_state.selected_currency} {abs(national_diff * rate):,.0f} {'more' if national_diff > 0 else 'less'}.")
         
         with col3:
             if pct > 0:
@@ -1232,7 +1232,7 @@ with tab2:
         **Reading the Premium Comparison chart.**
         
         - **Blue bar (Your Premium)** : Your estimated annual premium based on your health profile
-        - **Purple bar (National Avg)** : The average premium across all age groups in the US ($12,000)
+        - **Purple bar (National Avg)** : The average premium across all age groups nationally ($12,000)
         - **Orange bar (Your Age Group)** : The average premium for people in your age range
         
         **What the comparisons indicates:**
