@@ -1497,6 +1497,7 @@ with tab2:
         - **Positive bars (green)** = Your current health factor is BETTER than average, lowering your premium
         - **Negative bars (red)** = Your current health factor is WORSE than average, raising your premium
         - **Example:** A -15% for Smoking means being a smoker increases your premium by 15%
+        
         """)
         
         st.markdown("---")
